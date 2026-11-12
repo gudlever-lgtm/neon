@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {newGame,movePaddle,tick,validName,validPassword,hashPassword,verifyPassword,safeId} from '../src/core.js';
+test('user validation',()=>{assert.equal(validName('A_B12'),true);assert.equal(validName('bad name'),false);assert.equal(validPassword('supersecure123'),true);assert.equal(validPassword('short'),false);assert.equal(safeId('5'),5);assert.equal(safeId('-2'),null)});
+test('password hashing',async()=>{const h=await hashPassword('supersecure123');assert.equal(await verifyPassword('supersecure123',h),true);assert.equal(await verifyPassword('wrong',h),false)});
+test('paddle inputs are restricted to match participants and clamped',()=>{const g=newGame(1,2,3);assert.equal(movePaddle(g,4,999),false);assert.equal(movePaddle(g,1,-90),true);assert.equal(g.topX,62);assert.equal(movePaddle(g,2,900),true);assert.equal(g.bottomX,328);assert.equal(movePaddle(g,1,NaN),false)});
+test('server physics awards point to bottom player and resets ball',()=>{const g=newGame(1,2,3);g.readyAt=0;g.ball={x:190,y:-20,vx:0,vy:-270};assert.equal(tick(g,.01,1000)?.point,'bottom');assert.equal(g.bottomScore,1);assert.equal(g.ball.y,295)});
+test('server physics completes match at seven',()=>{const g=newGame(1,2,3);g.bottomScore=6;g.readyAt=0;g.ball={x:190,y:-20,vx:0,vy:-270};assert.deepEqual(tick(g,.01,1000),{winnerId:2,reason:'score'});assert.equal(g.status,'finished')});

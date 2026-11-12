@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Neon Rally",
+    "slug": "neon-rally",
+    "scheme": "neonrally",
+    "version": "0.6.0",
+    "orientation": "portrait",
+    "ios": {
+      "bundleIdentifier": "dk.neonrally.game",
+      "supportsTablet": true
+    },
+    "plugins": []
+  }
+}

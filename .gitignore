@@ -1,0 +1,15 @@
+node_modules/
+www/
+android/.gradle/
+android/local.properties
+android/build/
+android/app/build/
+.expo/
+.expo-shared/
+expo-ios/node_modules/
+expo-ios/.expo/
+server/.env
+*.keystore
+*.jks
+android/
+dist/

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#090d22">
+  <meta name="description" content="Neon Rally – en moderne mobil Pong-MVP">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>NEON RALLY · Pong MVP v0.6</title>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-symbol">◈</span><div>NEON <strong>RALLY</strong><small>ARCADE / MOBILE</small></div></div>
+      <button id="sound" type="button" class="icon-btn" aria-label="Slå lyd til eller fra" title="Lyd">♫</button>
+    </header>
+
+    <section class="game-shell" aria-label="Pong spil">
+      <div class="scorebar">
+        <div class="score-item"><span id="top-label">COMPUTER</span><strong id="ai-score">0</strong></div>
+        <div class="center-status"><span id="mode-tag">CLASSIC MODE</span><small id="state-tag">FØRST TIL 7</small></div>
+        <div class="score-item you"><span id="bottom-label">DIG</span><strong id="player-score">0</strong></div>
+        <button id="home" type="button" class="pause-btn home-btn" aria-label="Gå til forside" title="Gå til forside">⌂</button>
+        <button id="pause" type="button" class="pause-btn" aria-label="Pause" title="Pause">Ⅱ</button>
+      </div>
+      <div class="canvas-wrap" id="play-area">
+        <canvas id="game" width="390" height="590" aria-label="Pong spillebane. Flyt fingeren vandret for at styre nederste bat."></canvas>
+        <div id="overlay" class="overlay" role="dialog" aria-labelledby="overlay-title">
+          <div class="overlay-card">
+            <div class="orbit-logo" aria-hidden="true"><span class="orbit-ball"></span><span class="orbit-bat left"></span><span class="orbit-bat right"></span></div>
+            <p class="eyebrow" id="overlay-kicker">MOBILE ARCADE</p>
+            <h1 id="overlay-title">NEON<br><em>RALLY</em></h1>
+            <p id="overlay-desc" class="overlay-desc">Pong, genopfundet til touch.<br>Først til 7 point vinder.</p>
+            <div id="menu-config"><div id="mode-select" class="mode-select" role="group" aria-label="Vælg spiltype">
+              <button id="classic-mode" class="mode active" type="button">CLASSIC</button>
+              <button id="arcade-mode" class="mode" type="button">ARCADE</button><button id="versus-mode" class="mode" type="button">2 SPILLERE</button>
+            </div>
+            <div class="difficulty" role="group" aria-label="Vælg sværhedsgrad"><span>SVÆRHEDSGRAD</span><div class="difficulty-buttons"><button id="easy" type="button" data-difficulty="easy">LET</button><button id="normal" type="button" data-difficulty="normal" class="active">NORMAL</button><button id="hard" type="button" data-difficulty="hard">SVÆR</button></div></div>
+            <p id="multiplayer-help" class="multiplayer-help hidden">Læg telefonen fladt mellem jer. Spiller 2 styrer øverst, spiller 1 nederst. Begge skal holde en finger på banen.</p><p id="stats" class="stats">KAMPE 0 · SEJRE 0 · BEDSTE STIME 0</p></div>
+            <button id="main-action" class="primary" type="button">SPIL NU <span>➜</span></button>
+            <button id="online-entry" class="secondary online-entry" type="button">⚡ ONLINE MULTIPLAYER · TOP 10</button>
+            <button id="overlay-home" class="secondary hidden" type="button">⌂ GÅ TIL FORSIDE</button>
+            <p class="micro" id="overlay-tip">Træk fingeren mod venstre/højre for at styre.</p>
+          </div>
+        </div>
+        <div id="touch-pause" class="touch-pause hidden" aria-live="polite"><strong>PAUSE</strong><span>Begge spillere skal holde en finger på banen</span></div>
+        <div id="countdown" class="countdown hidden" aria-live="polite"></div>
+        <div id="toast" class="toast hidden" role="status"></div>
+      </div>
+      <div class="bottom-panel">
+        <div class="hint"><span class="hint-mark">↔</span><div><strong id="control-heading">DRAG TO MOVE</strong><small id="control-hint">Hold fingeren på banen · slip for pause</small></div></div>
+        <div id="powerups" class="powerups" hidden>
+          <button id="boost" type="button" class="power boost" aria-label="Brug turbo" title="Turbo"><span>ϟ</span><small>TURBO · <b id="boost-count">2</b></small></button>
+          <button id="shield" type="button" class="power shield" aria-label="Brug skjold" title="Skjold"><span>◇</span><small>SKJOLD · <b id="shield-count">1</b></small></button>
+        </div>
+      </div>
+    </section>
+    <section id="online-lobby" class="online-lobby hidden" aria-label="Online multiplayer">
+      <div class="online-head"><h2>⚡ ONLINE MULTIPLAYER</h2><button id="online-back" class="mini-neon" type="button">⌂ FORSIDE</button></div>
+      <div id="online-message" class="online-message" role="status">Opret en konto eller log ind</div>
+      <form id="online-login" class="online-auth" autocomplete="on">
+        <label>Brugernavn <input name="username" autocomplete="username" required minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+" placeholder="Dit spillernavn"></label>
+        <label>Kodeord <input id="login-password" name="password" type="password" required minlength="10" maxlength="128" autocomplete="current-password" placeholder="Mindst 10 tegn"></label>
+        <label class="auth-choice"><input type="checkbox" id="create-account"> Opret en ny konto</label>
+        <button class="primary" type="submit">LOG IND / OPRET KONTO</button>
+      </form>
+      <div id="online-dashboard" class="hidden">
+        <div class="online-user"><strong id="my-player">MIN PROFIL</strong><button id="online-logout" class="mini-neon hidden" type="button">LOG UD</button></div>
+        <div class="online-section"><div class="online-section-head"><h3>INVITATIONER</h3><button id="online-refresh" type="button" class="mini-neon">↻ OPDATER</button></div><div id="invite-list" class="online-list"></div></div>
+        <div class="online-section"><h3>FIND SPILLERE</h3><input id="player-search" placeholder="Søg efter spillernavn …" autocomplete="off" aria-label="Søg spillere"><div id="player-list" class="online-list"></div><button id="players-more" class="secondary" type="button">VIS FLERE</button></div>
+        <div class="online-section"><h3>🏆 GLOBAL TOP 10</h3><div id="rank-list" class="online-list"></div></div>
+      </div>
+    </section>
+    <footer>NEON RALLY v0.6 · ANDROID APK / IOS EXPO</footer>
+  </main>
+  <script src="app-config.js" defer></script>
+  <script src="game.js" defer></script>
+  <script src="online.js" defer></script>
+</body>
+</html>
