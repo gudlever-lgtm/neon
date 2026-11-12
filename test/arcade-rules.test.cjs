@@ -6,7 +6,7 @@ test('challenge rules are bounded and fallback to standard',()=>{
   assert.equal(rules.config('unknown').name,'Standard');
 });
 test('pickup picker is deterministic and contains every type',()=>{
-  assert.deepEqual([0,.34,.68,1].map(rules.pickupAt),['wide','slow','shield','shield']);
+  assert.deepEqual([0,.26,.51,.76,1].map(rules.pickupAt),['wide','slow','shield','multiball','multiball']);
 });
 test('rush time and outcomes handle edges',()=>{
   assert.equal(rules.timeLeft(90,89.01),1);
