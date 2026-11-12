@@ -1,94 +1,76 @@
-<<<<<<< HEAD
-# Neon Rally v0.5 — online multiplayer MVP
+# Neon – Pong til mobil
 
-**Status:** Implementeret som kode, serverstyret multiplayer-prototype. Ikke produktionsverificeret eller live-deployeret. Kræver egen MariaDB og en Node.js-server.
+**Udviklingsversion:** v0.10.0 (grafik + Arcade 2.0 + Multiplayer 2.0).
 
-## Indhold
-- `web/`: eksisterende Classic, Arcade, lokal 2-spiller og neon-UI plus konto/login, komplet søgbar spillerliste (sideinddelt), inviter/acceptér/afvis/annullér, global Top 10 og online Pong.
-- `server/sql/schema.sql`: komplet MariaDB database og `leaderboard` view.
-- `server/src/index.js`: REST API, session-adgang, invitationer, serverautoritativ game loop og WebSocket realtids-API.
-- `server/src/core.js`: adgangskodehash (scrypt), validering og spilfysik.
-- `server/test/`: enhedstests uden database.
-- `API.md`: routes, dataformat, fejlhåndtering, sikkerhedsnoter.
+Neon er et gratis Pong-spil til Android med Classic, Arcade, to spillere på samme telefon og API-baseret online multiplayer. Ingen reklamer eller køb.
 
-## Installation (Debian / Node.js 20+ / MariaDB 10.6+)
+## Repository
 
-1. Installer Node.js 20+ og MariaDB. Opret database og schema:
+- `web/`: HTML5/Canvas-spillet (pakkes i Android-appen via Capacitor)
+- `server/`: Node.js REST + WebSocket og MariaDB
+- `expo-ios/`: iOS-skal via Expo EAS (kræver særskilt validering af hostet spil-URL)
+- `landing/`: offentlig installationsside på `https://dulmens.dk/neon/`
+- `test/`: Arcade-regler og UI-smoketests
+- `build-apk.ps1`: Windows-build (APK/AAB) og iOS gennem EAS
 
-   ```sh
-   mariadb -u root -p < server/sql/schema.sql
-   ```
+## Version 0.8–0.10
 
-2. Opret en **dedikeret, mindst privilegeret** SQL-bruger (ændr adgangskoden):
+### v0.8: Visuel kvalitet
+- Neon-glød og partikelrespons ved boldkontakt
+- Diskret rystelse, bedre tryk- og fokustilstande
+- Reduceret animation når systemet ønsker det
 
-   ```sql
-   CREATE USER 'neon_api'@'localhost' IDENTIFIED BY 'REPLACE_WITH_A_LONG_RANDOM_PASSWORD';
-   GRANT SELECT, INSERT, UPDATE, DELETE ON neon_rally.* TO 'neon_api'@'localhost';
-   -- View'et leaderboard kan kræve CREATE VIEW-rettigheder ved første import (udfør import som admin).
-   ```
+### v0.9: Arcade 2.0
+- Standard, Rush 90 sekunder og Chaos
+- Opsamlings-power-ups: bredt bat (9 sekunder), slowmotion, ekstra skjold og Multiball
+- Ekstra Pong-bold med uafhængig fysik; tab af ekstra bold giver ikke straf
+- Classic og lokal multiplayer ændres ikke til power-up-varianter
 
-3. Fra `server/`:
+### v0.10: Multiplayer 2.0
+- Spillerprofiler med point/sejre/nederlag og indbyrdes statistik
+- Historik over egne seneste afsluttede onlinekampe
+- Profiladgang fra brugerlisten og ranglisten
+- Top 10 viser point og sejre
+- Genbruger eksisterende MariaDB-tabeller; **ingen SQL-migrering**
+- Nye REST-ruter kræver, at serverens kildekode deployes og systemd-servicen genstartes
 
-   ```sh
-   cp .env.example .env
-   # Ret .env (DB credentials, ALLOWED_ORIGINS, HOST og PORT)
-   npm install
-   npm run check
-   set -a; . ./.env; set +a
-   npm start
-   ```
+## Test
 
-4. Besøg `http://127.0.0.1:3100` lokalt. I produktion: kør Node bundet til loopback bag HTTPS-reverse-proxy, der også videresender WebSocket Upgrade `/ws`. **Eksponér ikke port 3100 direkte på internettet.** Brug offentligt `https://play.dit-domæne.dk` og sæt `ALLOWED_ORIGINS` til præcis den origin.
-5. Opret to testkonti i to forskellige browsere / private vinduer, send invitation, acceptér og spil til 7 point. Kontroller `GET /api/leaderboard`.
+På en maskine med Node.js:
 
-> Node.js indlæser **ikke** `.env` automatisk i denne kode. Brug shell-eksemplet, systemd `EnvironmentFile=` eller Node's `--env-file`-flag. Kopiér aldrig `.env` til `web/`.
-
-## Arkitektur
-
-```
-Mobilbrowser / senere Android / iOS
-    |  HTTPS: JSON REST /api/* (Bearer token)
-    |  WSS: /ws (auth message, paddle message, server snapshots)
-    v
-Node.js Express + WebSocket (autoritativ spilsimulation)
-    |
-    v
-MariaDB: users, sessions, invitations, matches, leaderboard (VIEW)
+```bash
+npm test
+cd server
+npm test
 ```
 
-En onlinekamp har ét autoritativt boldforløb på serveren. Klienter må kun sende deres batposition. Serveren beregner point, sejre og rangliste. Classic/Arcade/lokal 2-spiller fortsætter offline i browseren og indgår ikke i online Top 10.
+Tester regler, grafisk spilinitialisering (mocked Canvas) og eksisterende serverfysik/adgangskodefunktioner. Dette erstatter **ikke** faktisk test med MariaDB, lighttpd, WebSocket og to Android-enheder.
 
-## Kendte MVP-begrænsninger og driftshensyn
-- Onlinekampe ligger i denne version **i serverprocessens RAM**. Ved genstart annulleres aktive kampe uden ranglistepoint. Én Node-instans er forudsat; horisontal skalering kræver fælles state/koordination.
-- En spiller kan genetablere WebSocket-forbindelsen inden for 20 sekunder. Onlinekampe pauser ikke ved fingerløft (ellers kunne en spiller blokere modstanderen).
-- Brugernavne er unikke, søgbare og offentlige i spillet. Vis kun pseudonymer — ingen e-mail eller personoplysninger i spillerlisten. Der er ikke glemt-adgangskode-flow (ingen e-mailregistrering), blokering/rapportering, moderationspanel eller kontosletning i MVP.
-- Simpel hukommelsesbaseret rate limiting holder **ikke** på tværs af genstarter eller flere instanser. Implementér persistent limiter og overvågning inden offentlig lancering.
-- Tokens er tilfældige, hashede i DB, tidsbegrænsede til 7 dage og opbevares i browserens `sessionStorage`. Stram CSP, HTTPS og ingen tredjepartsscripts anbefales; overvej HttpOnly session-cookie + CSRF-beskyttelse til produktionsversion.
-- Ingen faktiske API-/DB-integrationstests er kørt i dette miljø, da der ikke er en MariaDB-instans eller installerede npm-afhængigheder. Enhedstests og syntakskontrol er kørt.
-- WebSocket-opdateringer sendes ~20 gange/sek. Der er serverautoritativ fysik, men ikke endnu interpolation/netværkslatenskompensation — kræver spiltest ved realistiske forbindelser.
-- Gratis og uden reklamer/betaling.
-
-## Test uden database
-`cd server && node --test test/*.test.js`
-=======
-# Neon Rally
-
-Mobil-Pong med Classic, Arcade, lokal multiplayer og API-baseret online multiplayer.
-
-## Første import
-
-Den samlede v0.6-kildekode er leveret som `neon-rally-v0.6-android-expo-buttons.zip` i ChatGPT-samtalen. Pak ZIP-indholdet (mappen `neon-rally-v0.6`) ud i `E:\neon-rally`, gennemgå ændringerne og commit/push til dette repository. **Denne README er kun initialisering, ikke hele spillet.**
-
-## Build på Windows
-
-Efter fuld import:
+## Android-build på Windows
 
 ```powershell
-cd E:\neon-rally
-.\build-apk.ps1 -Target apk -ApiUrl https://DIN-SERVER
-.\build-apk.ps1 -Target aab -ApiUrl https://DIN-SERVER
-.\build-apk.ps1 -Target ios -ExpoUrl https://DIN-SERVER
+cd E:\neon
+.\build-apk.ps1 -Target apk -SkipPull -ApiUrl https://dulmens.dk/neon
 ```
 
-APK via Android SDK/Capacitor; AAB kræver release-signering til Play Store. iOS bygges med Expo EAS og kræver konto/signering. Backend findes i `server/`, mobilwebkoden i `web/`, og Expo i `expo-ios/` efter importen.
->>>>>>> 53c06f271785368c63724d3712b69f099d7886dc
+- APK: `dist/neon.apk`
+- QR: `dist/neon-qr.png`
+- Der uploades **ikke** automatisk
+- API-basen er `https://dulmens.dk/neon` (uden `/api`); websocket-adressen er `wss://dulmens.dk/neon/ws`
+- Android bygger med lokal JDK 21 + SDK; iOS er konfigureret til Expo EAS
+
+**Ingen APK er bygget som led i v0.8–v0.10-ændringerne.**
+
+## Eksisterende driftsopsætning
+
+Backend forbliver i `/var/www/dulmens.dk/neon/server/` og systemd-servicen `neon-rally.service` bevares. DB-navnet `neon_rally` og de gamle localStorage-nøgler bevares af hensyn til kompatibilitet.
+
+Offentlige stier:
+- `/neon/` installationsside
+- `/neon/api/` REST (proxy til port 3100 /api)
+- `/neon/ws` WebSocket (proxy til port 3100 /ws)
+- `/downloads/neon.apk` manuel APK-distribution
+
+Serverens `.env` må ikke være offentligt tilgængelig; del ikke backendens mappe som statiske webfiler.
+
+Se `API.md` og `landing/README.md` for yderligere dokumentation.
