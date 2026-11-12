@@ -37,7 +37,7 @@
               <button id="classic-mode" class="mode active" type="button">CLASSIC</button>
               <button id="arcade-mode" class="mode" type="button">ARCADE</button><button id="versus-mode" class="mode" type="button">2 SPILLERE</button>
             </div>
-            <div class="difficulty" role="group" aria-label="Vælg sværhedsgrad"><span>SVÆRHEDSGRAD</span><div class="difficulty-buttons"><button id="easy" type="button" data-difficulty="easy">LET</button><button id="normal" type="button" data-difficulty="normal" class="active">NORMAL</button><button id="hard" type="button" data-difficulty="hard">SVÆR</button></div></div>
+            <div id="arcade-challenges" class="arcade-challenges hidden" role="group" aria-label="Arcade-udfordring"><span>ARCADE UDFORDRING</span><div class="challenge-options"><button type="button" data-challenge="standard" class="active">STANDARD</button><button type="button" data-challenge="rush">RUSH 90</button><button type="button" data-challenge="chaos">CHAOS</button></div><small>Grib power-ups med bolden: bredt bat, slowmotion eller ekstra skjold.</small></div><div class="difficulty" role="group" aria-label="Vælg sværhedsgrad"><span>SVÆRHEDSGRAD</span><div class="difficulty-buttons"><button id="easy" type="button" data-difficulty="easy">LET</button><button id="normal" type="button" data-difficulty="normal" class="active">NORMAL</button><button id="hard" type="button" data-difficulty="hard">SVÆR</button></div></div>
             <p id="multiplayer-help" class="multiplayer-help hidden">Læg telefonen fladt mellem jer. Spiller 2 styrer øverst, spiller 1 nederst. Begge skal holde en finger på banen.</p><p id="stats" class="stats">KAMPE 0 · SEJRE 0 · BEDSTE STIME 0</p></div>
             <button id="main-action" class="primary" type="button">SPIL NU <span>➜</span></button>
             <button id="online-entry" class="secondary online-entry" type="button">⚡ ONLINE MULTIPLAYER · TOP 10</button>
@@ -73,9 +73,10 @@
         <div class="online-section"><h3>🏆 GLOBAL TOP 10</h3><div id="rank-list" class="online-list"></div></div>
       </div>
     </section>
-    <footer>NEON v0.6 · ANDROID APK / IOS EXPO</footer>
+    <footer>NEON v0.9 · ANDROID APK / IOS EXPO</footer>
   </main>
   <script src="app-config.js" defer></script>
+  <script src="arcade-rules.js" defer></script>
   <script src="game.js" defer></script>
   <script src="online.js" defer></script>
 </body>
