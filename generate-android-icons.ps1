@@ -63,15 +63,16 @@ foreach($name in $density.Keys) {
   Draw-Icon $density[$name] $false $false (Join-Path $folder 'ic_launcher.png')
   Draw-Icon $density[$name] $false $true (Join-Path $folder 'ic_launcher_round.png')
 }
-$drawables = Join-Path $androidRes 'drawable'
-Draw-Icon 432 $true $false (Join-Path $drawables 'ic_launcher_foreground.png')
+$drawables = Join-Path $androidRes 'drawable-nodpi'
+# Unique resource name prevents drawable-v24/ic_launcher_foreground.xml from overriding the Neon art.
+Draw-Icon 432 $true $false (Join-Path $drawables 'neon_launcher_foreground.png')
 $values = Join-Path $androidRes 'values'
 New-Item -ItemType Directory -Force $values | Out-Null
 $colors = Join-Path $values 'neon_launcher_colors.xml'
 [System.IO.File]::WriteAllText($colors, '<?xml version="1.0" encoding="utf-8"?><resources><color name="neon_launcher_bg">#080D22</color></resources>', [System.Text.UTF8Encoding]::new($false))
 $anydpi = Join-Path $androidRes 'mipmap-anydpi-v26'
 New-Item -ItemType Directory -Force $anydpi | Out-Null
-$adaptive = '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/neon_launcher_bg"/><foreground android:drawable="@drawable/ic_launcher_foreground"/></adaptive-icon>'
+$adaptive = '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/neon_launcher_bg"/><foreground android:drawable="@drawable/neon_launcher_foreground"/></adaptive-icon>'
 foreach($file in @('ic_launcher.xml','ic_launcher_round.xml')) {
   [System.IO.File]::WriteAllText((Join-Path $anydpi $file),$adaptive,[System.Text.UTF8Encoding]::new($false))
 }
@@ -85,4 +86,18 @@ if(Test-Path $strings) {
     $xml.Save($strings)
   }
 }
-Write-Host "NEON launcher icons generated: mipmap densities, adaptive foreground, background." -ForegroundColor Green
+# Ensure the native AndroidManifest actually points to the custom mipmap resources.
+$manifestPath = Join-Path $ProjectRoot 'android\app\src\main\AndroidManifest.xml'
+if (-not (Test-Path $manifestPath)) { throw "AndroidManifest.xml mangler: $manifestPath" }
+[xml]$manifest = Get-Content $manifestPath -Raw -Encoding UTF8
+$androidNS='http://schemas.android.com/apk/res/android'
+$app=$manifest.manifest.application
+if (-not $app) { throw 'Application element not found in AndroidManifest.xml' }
+$app.SetAttribute('icon',$androidNS,'@mipmap/ic_launcher')
+$app.SetAttribute('roundIcon',$androidNS,'@mipmap/ic_launcher_round')
+$manifest.Save($manifestPath)
+$foreground = Join-Path $drawables 'neon_launcher_foreground.png'
+$adaptiveXml = Get-Content (Join-Path $anydpi 'ic_launcher.xml') -Raw
+if (-not (Test-Path $foreground) -or -not $adaptiveXml.Contains('@drawable/neon_launcher_foreground')) { throw 'Neon adaptive launcher resource verification failed' }
+Write-Host "NEON native launcher icon installed: $foreground" -ForegroundColor Green
+Write-Host 'Manifest icon: @mipmap/ic_launcher (adaptive points to neon_launcher_foreground)' -ForegroundColor Green
