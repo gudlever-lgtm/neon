@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070e20">
+<meta name="description" content="Neon – klassisk Pong i moderne neonstil. Hent Android APK.">
+<title>Neon · Pong til mobil</title>
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#070e20;color:#f1faff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse 65% 40% at 50% 6%,#133568 0%,transparent 70%),radial-gradient(ellipse 40% 50% at 90% 95%,#361044 0%,transparent 75%),#070e20}
+.wrap{max-width:1060px;margin:auto;padding:24px 20px 50px}header{display:flex;align-items:center;justify-content:space-between;gap:15px}header a{color:#9fb0c9;font-size:13px;text-decoration:none}header a:hover{color:white}.brand{display:flex;gap:12px;align-items:center;font-size:20px;font-weight:900;letter-spacing:.14em}.brand img{width:44px;height:44px}
+main{display:grid;grid-template-columns:1fr 370px;align-items:center;gap:50px;margin:70px auto 28px}
+.eyebrow{color:#65eafa;letter-spacing:.24em;font-size:12px;font-weight:750}.title{font-size:clamp(64px,10vw,126px);font-weight:1000;line-height:1;margin:16px 0 12px;font-style:italic;letter-spacing:-.08em;text-shadow:0 0 20px #007cffaa,0 0 55px #be32e888;color:#faffff}
+.lead{font-size:clamp(17px,2.4vw,22px);line-height:1.45;color:#d0dff3;max-width:540px;margin:0 0 24px}.tags{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 28px}.tags span{border:1px solid #355074;background:#0c1a34;padding:8px 12px;border-radius:999px;font-size:13px}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:13px;min-height:56px;padding:13px 28px;color:#fff;text-decoration:none;font-weight:800;letter-spacing:.02em;background:linear-gradient(105deg,#007eac,#172c87 58%,#7a158e);border:1px solid #42ecff;box-shadow:0 0 18px #12cffa55,inset 0 1px 0 #ffffff66;transition:transform .15s,box-shadow .15s}.button:hover{transform:translateY(-2px);box-shadow:0 0 30px #12cffa99}
+.note{font-size:13px;color:#9fb0c9;max-width:480px;line-height:1.5}.art{position:relative;padding:35px 26px;background:linear-gradient(140deg,#0b1e37,#0b0d25);border:1px solid #2e7aaf;border-radius:28px;box-shadow:0 0 60px #0d66a12c}.court{aspect-ratio:3/4;border:2px solid #3fe9ff;border-radius:15px;position:relative;box-shadow:inset 0 0 28px #11c1ed33,0 0 20px #0bc6fa55;background:linear-gradient(transparent 49.8%,#7894c666 50%,transparent 50.2%),repeating-linear-gradient(90deg,transparent 0 34px,#56a9cc11 35px)}.court:before{content:"";position:absolute;top:12%;left:35%;width:30%;height:8px;border-radius:20px;background:#ff5ce3;box-shadow:0 0 19px #f651e9}.court:after{content:"";position:absolute;bottom:12%;left:35%;width:30%;height:8px;border-radius:20px;background:#3ff4ff;box-shadow:0 0 19px #4af4ff}.ball{position:absolute;top:44%;left:52%;width:19px;height:19px;background:white;border-radius:50%;box-shadow:0 0 15px #7df9ff,0 0 30px #28b6f4}.trail{position:absolute;top:48%;left:22%;width:30%;height:5px;background:linear-gradient(90deg,transparent,#30dfff);transform:rotate(-22deg);filter:blur(2px)}
+.download{display:flex;align-items:center;gap:18px;margin-top:38px;padding:22px;background:#0c1931;border:1px solid #264c75;border-radius:20px;max-width:610px}.qr{width:154px;height:154px;background:white;padding:8px;border-radius:9px;flex-shrink:0}.qr canvas{width:100%;height:100%;display:block;image-rendering:pixelated}.download strong{font-size:18px}.download p{font-size:13px;line-height:1.45;color:#a6b8d1;margin:8px 0 0}.stores{display:flex;flex-wrap:wrap;gap:14px;margin-top:22px}.store{padding:12px 18px;border:1px solid #47627f;border-radius:11px;background:#101a2d;color:#a2b0c8;font-weight:700;min-width:190px}.store small{display:block;font-size:11px;font-weight:500;margin-bottom:4px}footer{text-align:center;color:#7187a4;font-size:12px;margin:70px 0 0}
+@media(max-width:790px){main{grid-template-columns:1fr;margin:38px auto 0;gap:28px}.art{max-width:360px;margin:auto;width:100%;padding:18px}.download{flex-direction:column;align-items:flex-start}.qr{align-self:center}.title{font-size:76px}}
+</style>
+</head>
+<body><div class="wrap">
+<header><div class="brand"><img src="./icon.svg" alt=""> NEON</div><a href="https://github.com/gudlever-lgtm/neon">Projekt på GitHub</a></header>
+<main>
+<section><div class="eyebrow">THE PONG EXPERIENCE</div><h1 class="title">NEON</h1><p class="lead">Klassisk Pong. Moderne neon. Udfordr computeren, spil Arcade eller dyst mod andre spillere.</p>
+<div class="tags"><span>Classic</span><span>Arcade</span><span>2 spillere</span><span>Online dueller</span></div>
+<a class="button" href="/downloads/neon.apk" download>↓ Download Android APK</a>
+<p class="note">Android-testversion. Telefonen kan bede dig godkende installation fra browseren. Installer kun APK-filer fra kilder, du stoler på.</p>
+<div class="download"><div class="qr"><canvas id="qr" width="330" height="330" role="img" aria-label="QR-kode til download af Neon Android APK"></canvas></div><div><strong>Scan og installer</strong><p>Scan koden med din Android-telefon, eller brug downloadknappen ovenfor.</p><p>dulmens.dk/downloads/neon.apk</p></div></div>
+<div class="stores"><div class="store" aria-disabled="true"><small>Kommer senere</small>▶ Google Play</div><div class="store" aria-disabled="true"><small>Kommer senere</small>● App Store</div></div>
+</section>
+<aside class="art" aria-label="Illustration af Neon Pong"><div class="court"><div class="trail"></div><div class="ball"></div></div></aside>
+</main><footer>© Neon · Pong til Android og iOS · Kun installationsside; spillet kører i appen.</footer>
+</div>
+<script>
+/* Matrix generated for https://dulmens.dk/downloads/neon.apk, QR error correction M, 2-module quiet zone. */
+(function(){
+ const hex='000000000000000001fd09f7f082e622085d3745742ea072ba1749f25d082423a087f5555fc003f940016e2dc4b06450ff886fc916182a6dcfe206e1080c0c01d523855954e1c196327c403f827ba06cb505704de0c6d00f2a77880d64bdfc0009e88f87f764d6820ae0a3617456df40ba8388c85d7b7094209422b41fdd674200000000000000000';
+ const bits=BigInt('0x'+hex).toString(2).padStart(1092,'0').slice(-1089);
+ const c=document.getElementById('qr'),ctx=c.getContext('2d'); if(!ctx)return;
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,330,330);ctx.fillStyle='#071120';
+ for(let y=0;y<33;y++)for(let x=0;x<33;x++)if(bits[y*33+x]==='1')ctx.fillRect(x*10,y*10,10,10);
+})();
+</script></body></html>
