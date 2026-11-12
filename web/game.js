@@ -102,7 +102,8 @@
     }
     if(game.state!=='playing')return;
     advanceExtraBall(dt);
-    if(game.state!=='playing')return;
+    // An extra ball can score and replace the main ball. Do not reuse the old frame.
+    if(game.state!=='playing'||game.ball!==b)return;
     if(Math.abs(b.y-beforeY)>0)game.trail.push({x:b.x,y:b.y,life:.36});if(game.trail.length>60)game.trail.shift();for(const t of game.trail)t.life-=dt;game.trail=game.trail.filter(t=>t.life>0);
     for(const p of game.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}game.particles=game.particles.filter(p=>p.life>0);game.flash=Math.max(0,game.flash-2*dt);
   }
