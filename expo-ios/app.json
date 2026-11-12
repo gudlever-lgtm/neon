@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Neon Rally",
-    "slug": "neon-rally",
-    "scheme": "neonrally",
+    "name": "Neon",
+    "slug": "neon",
+    "scheme": "neon",
     "version": "0.6.0",
     "orientation": "portrait",
     "ios": {
-      "bundleIdentifier": "dk.neonrally.game",
+      "bundleIdentifier": "dk.dulmens.neon",
       "supportsTablet": true
     },
     "plugins": []
