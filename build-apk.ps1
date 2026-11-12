@@ -66,6 +66,9 @@ if($Target -in @('apk','aab','all')){
   }else{Write-Warning 'Ingen -ApiUrl: lokal Classic/Arcade virker, men online multiplayer i APK kræver et API endpoint.'}
   if(!(Test-Path 'android/gradlew.bat')){Invoke-Checked 'npx.cmd' @('cap','add','android')}
   Invoke-Checked 'npx.cmd' @('cap','sync','android')
+  # Capacitor sync can recreate default launcher resources. Reapply NEON icons every build.
+  if(!(Test-Path 'generate-android-icons.ps1')){throw 'generate-android-icons.ps1 mangler. Hent seneste filer fra GitHub.'}
+  & (Join-Path $ProjectRoot 'generate-android-icons.ps1') -ProjectRoot $ProjectRoot
   $properties="sdk.dir=$($sdk.Replace('\\','/').Replace('\','/').Replace(':','\:'))"
   Set-Content 'android/local.properties' $properties -Encoding ascii
   Push-Location 'android'
