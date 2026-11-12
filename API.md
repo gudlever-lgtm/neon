@@ -1,4 +1,4 @@
-# Neon Rally v0.5 REST + WebSocket API
+# Neon v0.10 REST + WebSocket API
 
 Base URL: `/api`; JSON over HTTPS. Beskyttede kald skal have `Authorization: Bearer <session token>`.
 
@@ -67,3 +67,48 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 ```
 
 `$TOKEN` skal erstattes med `token` fra login/respons. Invitationer kan også sendes til offlinebrugere; de bliver synlige næste gang brugeren logger ind, hvis de ikke er udløbet (10 minutters udløb i denne MVP).
+
+## v0.10 – spillerprofil og kamphistorik
+
+Alle ruter under /api bruger samme eksisterende Bearer-session som online multiplayer. API'en leveres fortsat via `https://dulmens.dk/neon/api/` og WebSocket via `wss://dulmens.dk/neon/ws`.
+
+### GET /api/players/:id/profile
+
+Kræver `Authorization: Bearer <token>`. Returnerer profil for en aktiv, registreret spiller og indbyrdes statistik mod den aktuelt loggede bruger.
+
+```json
+{
+  "player": { "id": 2, "username": "Pixel", "wins": 9, "losses": 4, "points": 1230, "online": false },
+  "headToHead": { "played": 3, "wins": 2, "losses": 1 }
+}
+```
+
+**Bemærk:** Tallene ovenfor er illustrative, ikke virkelige spillerdata.
+
+### GET /api/matches/history?limit=15
+
+Kræver autentifikation. `limit` er heltal fra 1 til 30. Returnerer **kun den loggede spillers egne afsluttede kampe** i omvendt datoorden; afbrudte/annullerede kampe vises ikke.
+
+```json
+{
+  "matches": [
+    {
+      "id": 4,
+      "opponentId": 2,
+      "opponent": "Pixel",
+      "myScore": 7,
+      "theirScore": 5,
+      "outcome": "win",
+      "reason": "score",
+      "finishedAt": "2026-11-12 19:25:00.000"
+    }
+  ]
+}
+```
+
+### Drift
+
+- Ingen SQL-migrering er nødvendig, da ruterne læser fra eksisterende `matches`, `users` og `leaderboard`.
+- Udrul opdateret `server/src/index.js` til den **eksisterende** `/var/www/dulmens.dk/neon/server/` og genstart først derefter `neon-rally.service`.
+- Den eksisterende base-URL i APK-buildscriptet er `-ApiUrl https://dulmens.dk/neon` – frontend tilføjer `/api` og `/ws`.
+- Gennemfør manuel integrationstest med to konti og MariaDB inden produktion. Rute- og frontend-syntaks er kontrolleret, men der er ikke udført en faktisk database-/WebSocket-integrationstest fra dette miljø.
