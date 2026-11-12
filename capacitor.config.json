@@ -1,6 +1,6 @@
 {
-  "appId": "dk.neonrally.game",
-  "appName": "Neon Rally",
+  "appId": "dk.dulmens.neon",
+  "appName": "Neon",
   "webDir": "www",
   "android": {
     "allowMixedContent": false
