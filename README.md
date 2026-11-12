@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Neon Rally v0.5 — online multiplayer MVP
 
 **Status:** Implementeret som kode, serverstyret multiplayer-prototype. Ikke produktionsverificeret eller live-deployeret. Kræver egen MariaDB og en Node.js-server.
@@ -69,3 +70,25 @@ En onlinekamp har ét autoritativt boldforløb på serveren. Klienter må kun se
 
 ## Test uden database
 `cd server && node --test test/*.test.js`
+=======
+# Neon Rally
+
+Mobil-Pong med Classic, Arcade, lokal multiplayer og API-baseret online multiplayer.
+
+## Første import
+
+Den samlede v0.6-kildekode er leveret som `neon-rally-v0.6-android-expo-buttons.zip` i ChatGPT-samtalen. Pak ZIP-indholdet (mappen `neon-rally-v0.6`) ud i `E:\neon-rally`, gennemgå ændringerne og commit/push til dette repository. **Denne README er kun initialisering, ikke hele spillet.**
+
+## Build på Windows
+
+Efter fuld import:
+
+```powershell
+cd E:\neon-rally
+.\build-apk.ps1 -Target apk -ApiUrl https://DIN-SERVER
+.\build-apk.ps1 -Target aab -ApiUrl https://DIN-SERVER
+.\build-apk.ps1 -Target ios -ExpoUrl https://DIN-SERVER
+```
+
+APK via Android SDK/Capacitor; AAB kræver release-signering til Play Store. iOS bygges med Expo EAS og kræver konto/signering. Backend findes i `server/`, mobilwebkoden i `web/`, og Expo i `expo-ios/` efter importen.
+>>>>>>> 53c06f271785368c63724d3712b69f099d7886dc
