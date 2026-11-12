@@ -65,5 +65,5 @@ let lastTick=Date.now();setInterval(()=>{const now=Date.now(),dt=Math.min(.05,(n
  const event=tick(g,dt,now);if(event?.winnerId){completeMatch(g,event.winnerId,'score');continue}if(event?.point){ioSend(g.topId,{type:'point',side:event.point});ioSend(g.bottomId,{type:'point',side:event.point})}
  if(g.status==='active'){const snap=snapshot(g);ioSend(g.topId,snap);ioSend(g.bottomId,snap)}
  }},50).unref();
-async function boot(){await pool.query('SELECT 1');const [r]=await pool.query("UPDATE matches SET status='cancelled',finish_reason='server_restart',finished_at=UTC_TIMESTAMP(3) WHERE status='active'");if(r.affectedRows)console.warn('Cancelled active matches after server restart:',r.affectedRows);server.listen(port,process.env.HOST||'127.0.0.1',()=>console.log(`Neon Rally API on ${process.env.HOST||'127.0.0.1'}:${port}`))}
+async function boot(){await pool.query('SELECT 1');const [r]=await pool.query("UPDATE matches SET status='cancelled',finish_reason='server_restart',finished_at=UTC_TIMESTAMP(3) WHERE status='active'");if(r.affectedRows)console.warn('Cancelled active matches after server restart:',r.affectedRows);server.listen(port,process.env.HOST||'127.0.0.1',()=>console.log(`Neon API on ${process.env.HOST||'127.0.0.1'}:${port}`))}
 boot().catch(err=>{console.error('Server startup failed:',err);process.exitCode=1;pool.end()});
