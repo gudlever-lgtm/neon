@@ -10,7 +10,7 @@
     rush:Object.freeze({name:'Rush 90',duration:90,pickupEvery:7}),
     chaos:Object.freeze({name:'Chaos',duration:0,pickupEvery:4})
   });
-  const PICKUPS=Object.freeze(['wide','slow','shield']);
+  const PICKUPS=Object.freeze(['wide','slow','shield','multiball']);
   function config(id){return CHALLENGES[id]||CHALLENGES.standard}
   function pickupAt(random){const n=Math.min(.999999,Math.max(0,Number.isFinite(random)?random:0));return PICKUPS[Math.floor(n*PICKUPS.length)]}
   function timeLeft(duration,elapsed){return Math.max(0,Math.ceil(duration-elapsed))}
