@@ -24,7 +24,7 @@
 - Alle ændringer er committet direkte til `gudlever-lgtm/neon` (main).
 - Ingen APK eller AAB er bygget.
 - Windows projektsti er `E:\neon`.
-- Backend bliver på `/var/www/dulmens.dk/neon/server/` med eksisterende systemd-service `neon-rally.service`.
+- Backend bliver på `/var/www/dulmens.dk/neon-backend/server/` med eksisterende systemd-service `neon-rally.service`.
 - Database `neon_rally` og legacy localStorage-nøgler bevares.
 - Installationssiden `/neon/` er separat fra spilfrontend; **kopiér ikke** web-spillet ind over landingssiden.
 - Online-API-funktionerne aktiveres først efter deployment og servicegenstart.
@@ -46,6 +46,19 @@ curl -i http://127.0.0.1:3100/api/leaderboard
 ```
 
 De nye `/api/players/:id/profile` og `/api/matches/history` kræver Bearer-token.
+
+## Læsebaseret lokal og offentlig integrationstest
+
+På Debian, fra `/var/www/dulmens.dk/neon-backend/server/`:
+
+```bash
+node scripts/verify-deployment.mjs
+node scripts/verify-deployment.mjs --public
+```
+
+Dette kontrollerer API-health, rangliste, at profil/historik kræver login samt WebSocket-handshake og forventet timeout for ikke-autentificerede forbindelser. Den **opretter ikke** konto, kampe eller invitationer. En bestået test er ikke en fuld multiplayer-integrationstest.
+
+Brug `NEON_PUBLIC_URL=https://dulmens.dk/neon` hvis den offentlige baseadresse ændres. Vær opmærksom på, at `--public` kræver at lighttpd sender `/neon/api/*` videre til Node /api/* og `/neon/ws` til /ws.
 
 ## Ikke i scope i denne leverance
 
