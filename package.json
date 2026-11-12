@@ -1,10 +1,11 @@
 {
   "name": "neon",
-  "version": "0.6.0",
+  "version": "0.10.0",
   "private": true,
   "scripts": {
     "android:sync": "npx cap sync android",
-    "android:open": "npx cap open android"
+    "android:open": "npx cap open android",
+    "test": "node --test"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.0",
