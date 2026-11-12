@@ -28,9 +28,9 @@ function Draw-Icon([int]$size, [bool]$transparent, [bool]$round, [string]$path) 
     $penC = [System.Drawing.Pen]::new((C '#49EFFE'),28)
     $penM = [System.Drawing.Pen]::new((C '#FF65DF'),28)
     $penT = [System.Drawing.Pen]::new((C '#227BBA'),15)
-    $penC.StartCap = $penC.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $penM.StartCap = $penM.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $penT.StartCap = $penT.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $penC.StartCap = [System.Drawing.Drawing2D.LineCap]::Round; $penC.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $penM.StartCap = [System.Drawing.Drawing2D.LineCap]::Round; $penM.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $penT.StartCap = [System.Drawing.Drawing2D.LineCap]::Round; $penT.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
     try {
       $g.DrawLine($penC,75,100,75,405)
       $g.DrawLine($penM,437,100,437,405)
