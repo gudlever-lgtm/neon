@@ -37,3 +37,14 @@ cd E:\neon
 Produktnavn: `Neon`. Android package ID: `dk.dulmens.neon`. Expo iOS bundle ID: `dk.dulmens.neon`.
 
 Eksisterende databasenavn `neon_rally` og localStorage-nøgler bevares for ikke at miste brugerdata.
+
+## QR-fil
+
+Landingssiden bruger `qr-neon.png`. Generér en **ægte** QR-kode med `qrencode` på webserveren:
+
+```bash
+sudo apt-get install -y qrencode
+qrencode -o /var/www/dulmens.dk/neon-public/qr-neon.png -s 9 -m 3 'https://dulmens.dk/downloads/neon.apk'
+```
+
+Vær sikker på, at `icon.svg`, `index.html` og `qr-neon.png` serveres fra **samme** `/neon/`-URL. Repoets landingsside er ikke automatisk deployet ved Git commit.
