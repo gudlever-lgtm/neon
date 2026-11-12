@@ -5,11 +5,12 @@ Mappen `landing/` er en statisk installationsside, der **ikke** skal indgå i Ca
 ## Publicering på Debian + lighttpd
 
 1. Hent kildekoden fra `https://github.com/gudlever-lgtm/neon`.
-2. Kopiér `landing/index.html` og `landing/icon.svg` til den mappe, som lighttpd serverer på `https://dulmens.dk/neon/`. Eksempel, **kun hvis** `/var/www/dulmens.dk/neon` er dokumentroden for den URL:
+2. **Anbefalet:** Hold landingssiden i en separat offentlig mappe, eksempelvis `/var/www/dulmens.dk/neon-public/`, og peg lighttpd alias på den. Din Node-backend ligger allerede under `/var/www/dulmens.dk/neon/server/`, og denne servermappe må **ikke** eksponeres som statiske filer. Kopiér de to filer således:
 
    ```bash
-   install -m 0644 landing/index.html /var/www/dulmens.dk/neon/index.html
-   install -m 0644 landing/icon.svg /var/www/dulmens.dk/neon/icon.svg
+   install -d -m 0755 /var/www/dulmens.dk/neon-public
+   install -m 0644 landing/index.html /var/www/dulmens.dk/neon-public/index.html
+   install -m 0644 landing/icon.svg /var/www/dulmens.dk/neon-public/icon.svg
    ```
 
 3. Kontrollér at disse routingregler fortsat virker, inden du sætter siden i drift:
@@ -18,7 +19,7 @@ Mappen `landing/` er en statisk installationsside, der **ikke** skal indgå i Ca
    - `/neon/` => statisk landing/index.html
    - `/downloads/neon.apk` => fysisk APK på webserveren
 
-Det er vigtigt, at routing for API/WebSocket har højere prioritet end den statiske side.
+Det er vigtigt, at routing for API/WebSocket har højere prioritet end den statiske side. Blokér offentlig adgang til `server/`, `.env`, SQL og andre interne projektfiler. Test at `https://dulmens.dk/neon/server/.env` **ikke** kan downloades. Ændr ikke lighttpd-konfiguration uden at kontrollere den eksisterende vhost først.
 
 **Ingen APK uploades af buildscriptet.** Placér manuelt `dist/neon.apk` som `/var/www/dulmens.dk/downloads/neon.apk`.
 
