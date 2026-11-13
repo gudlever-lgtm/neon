@@ -70,18 +70,26 @@ npm run test:e2e
 
 En skrivende test mod den offentlige server kan kun startes eksplicit med `--public-write` og `NEON_E2E_ALLOW_PUBLIC=1`. Den opretter rigtige konti og kampe, og **sletter ikke automatisk data**. Brug den først efter særskilt godkendelse og med plan for oprydning. Den er ikke en del af GitHub-workflowet.
 
-## Android-build på Windows
+## Ét Windows-script: Android lokalt, iOS via Expo EAS
 
 ```powershell
 cd E:\neon
-.\build-apk.ps1 -Target apk -SkipPull -ApiUrl https://dulmens.dk/neon
+.\build-apk.ps1 -Platform apk
+.\build-apk.ps1 -Platform aab
+.\build-apk.ps1 -Platform ios -IosProfile preview
+.\build-apk.ps1 -Platform ios -IosProfile production -Submit
 ```
 
-- APK: `dist/neon.apk`
+- `-Target` er et bagudkompatibelt alias for `-Platform`. `-Platform all` bygger APK, AAB og iOS.
+- APK: `dist/neon.apk` og `Downloads/neon.apk`
+- AAB: `dist/neon-release-unsigned.aab` og `Downloads/neon-release-unsigned.aab` (**ikke signeret**)
 - QR: `dist/neon-qr.png`
 - Der uploades **ikke** automatisk
 - API-basen er `https://dulmens.dk/neon` (uden `/api`); websocket-adressen er `wss://dulmens.dk/neon/ws`
-- Android bygger med lokal JDK 21 + SDK; iOS er konfigureret til Expo EAS
+- Android bygger lokalt med JDK 21 + Android SDK (Gradle). **Kun iOS benytter Expo EAS**.
+- `-IosProfile preview` bygger til registreret iPhone. Kør `cd expo-ios; npx eas device:create` først.
+- `-IosProfile production -Submit` bygger og uploader samme nye build til TestFlight, så et gammelt build ikke genindsendes ved en fejl.
+- Brug `-SkipPull`, hvis du bevidst bygger fra lokale ændringer. `-SkipInstall` springer installation over, når modulerne findes.
 
 ## iOS via Expo.dev (offline-spil)
 
@@ -97,7 +105,7 @@ npx eas-cli login
 npx eas-cli build --platform ios --profile production
 ```
 
-Alternativt bygger `./build-apk.ps1 -Target ios -SkipPull` det lokale bundle før EAS-build. iOS-signering og distribution kræver Apple Developer-adgang. Expo-projektet bygger en iOS-app; der er ikke lavet nogen IPA i repositoryet.
+Alternativt bygger `./build-apk.ps1 -Platform ios -SkipPull` det lokale bundle før EAS-build. iOS-signering og distribution kræver Apple Developer-adgang. Expo-projektet bygger en iOS-app; der er ikke lavet nogen IPA i repositoryet.
 
 **Ingen APK er bygget som led i v0.8–v0.10-ændringerne.**
 

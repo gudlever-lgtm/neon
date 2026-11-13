@@ -20,3 +20,13 @@ test('Neon Android launcher art is reapplied after Capacitor sync', () => {
     assert.ok(icons.includes(`${density}=`), `Missing Android density: ${density}`);
   }
 });
+test('Android builds stay local while only iOS uses Expo EAS',()=>{
+  assert.match(build,/\[Alias\('Platform'\)\]/);
+  assert.match(build,/gradlew\.bat' @\('assembleDebug'/);
+  assert.match(build,/gradlew\.bat' @\('bundleRelease'/);
+  assert.match(build,/if\(\$Target -in @\('ios','all'\)\)/);
+  assert.match(build,/\$easArgs=@\('eas','build','--platform','ios'/);
+  assert.match(build,/if\(\$Submit\)\{\$easArgs\+= '--auto-submit'\}/);
+  assert.match(build,/Copy-Item \$apk \(Join-Path \$OutputDirectory 'neon\.apk'\)/);
+  assert.match(build,/Copy-Item \$aab \(Join-Path \$OutputDirectory 'neon-release-unsigned\.aab'\)/);
+});

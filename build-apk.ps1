@@ -1,24 +1,29 @@
 <#
 .SYNOPSIS
-  Build Neon on Windows E:\neon: APK, AAB, or Expo EAS iOS.
+  Build Neon on Windows: Android APK/AAB locally; iOS exclusively with Expo EAS.
 .EXAMPLE
-  .\build-apk.ps1 -Target apk
-  .\build-apk.ps1 -Target aab -SkipPull
-  .\build-apk.ps1 -Target ios -ExpoUrl https://play.example.org
-  .\build-apk.ps1 -Target all -ExpoUrl https://play.example.org
+  .\build-apk.ps1 -Platform apk
+  .\build-apk.ps1 -Platform aab -SkipPull
+  .\build-apk.ps1 -Platform ios -IosProfile preview
+  .\build-apk.ps1 -Platform ios -IosProfile production -Submit
+  .\build-apk.ps1 -Target all
 #>
 [CmdletBinding()]
 param(
-  [ValidateSet('apk','aab','ios','all')][string]$Target='apk',
+  [Alias('Platform')][ValidateSet('apk','aab','ios','all')][string]$Target='apk',
   [string]$ProjectRoot=$PSScriptRoot,
   [string]$AndroidSdk='E:\Android',
-  [string]$ExpoUrl=$env:EXPO_PUBLIC_GAME_URL,
-  [string]$ApiUrl=$env:NEON_API_URL,
+  [string]$ApiUrl='https://dulmens.dk/neon',
+  [ValidateSet('preview','production')][string]$IosProfile='production',
+  [switch]$Submit,
+  [string]$OutputDirectory=(Join-Path $env:USERPROFILE 'Downloads'),
   [switch]$SkipPull,
   [switch]$SkipInstall
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
+if($Submit -and $Target -notin @('ios','all')){throw '-Submit kan kun bruges med -Platform ios eller all.'}
+if($Submit -and $IosProfile -ne 'production'){throw '-Submit kræver -IosProfile production. Preview kan ikke indsendes til TestFlight.'}
 function Invoke-Checked([string]$Command, [string[]]$Arguments) {
   Write-Host "`n> $Command $($Arguments -join ' ')" -ForegroundColor Cyan
   & $Command @Arguments
@@ -79,7 +84,12 @@ if($Target -in @('apk','aab','all')){
       if(!(Test-Path $apk)){throw 'APK blev ikke fundet efter build'}
       New-Item -ItemType Directory -Force -Path '../dist' | Out-Null
       Copy-Item $apk '../dist/neon.apk' -Force
-      Write-Host 'APK: dist/neon.apk' -ForegroundColor Green
+      if($OutputDirectory){
+        New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+        Copy-Item $apk (Join-Path $OutputDirectory 'neon.apk') -Force
+        Write-Host "APK: $(Join-Path $OutputDirectory 'neon.apk')" -ForegroundColor Green
+      }
+      Write-Host 'APK: dist/neon.apk (lokalt build)' -ForegroundColor Green
       # Generate an offline QR image for the permanent URL; do not upload anything.
       Add-Type -AssemblyName System.Drawing
       $hex = '000000000000000001fd09f7f082e622085d3745742ea072ba1749f25d082423a087f5555fc003f940016e2dc4b06450ff886fc916182a6dcfe206e1080c0c01d523855954e1c196327c403f827ba06cb505704de0c6d00f2a77880d64bdfc0009e88f87f764d6820ae0a3617456df40ba8388c85d7b7094209422b41fdd674200000000000000000'
@@ -108,6 +118,11 @@ if($Target -in @('apk','aab','all')){
       if(!(Test-Path $aab)){throw 'AAB blev ikke fundet efter build'}
       New-Item -ItemType Directory -Force -Path '../dist' | Out-Null
       Copy-Item $aab '../dist/neon-release-unsigned.aab' -Force
+      if($OutputDirectory){
+        New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+        Copy-Item $aab (Join-Path $OutputDirectory 'neon-release-unsigned.aab') -Force
+        Write-Host "AAB: $(Join-Path $OutputDirectory 'neon-release-unsigned.aab')" -ForegroundColor Green
+      }
       Write-Warning 'AAB er IKKE konfigureret med release-signering og er ikke klar til Play Store uden signering.'
     }
   }finally{Pop-Location}
@@ -117,8 +132,17 @@ if($Target -in @('ios','all')){
   Invoke-Checked 'node' @('scripts/build-ios-web.mjs')
   Push-Location 'expo-ios'
   try{
-    if(-not $SkipInstall -or !(Test-Path 'node_modules')){Invoke-Checked 'npm.cmd' @('install')}
-    Invoke-Checked 'npx.cmd' @('eas','build','--platform','ios','--profile','production')
-    Write-Host 'iOS build bestilt hos Expo EAS. Hent IPA fra EAS, hvis build og signing lykkes.' -ForegroundColor Green
+    if(-not $SkipInstall -or !(Test-Path 'node_modules/expo') -or !(Test-Path 'node_modules/expo-modules-autolinking')){Invoke-Checked 'npm.cmd' @('install','--include=dev')}
+    $easArgs=@('eas','build','--platform','ios','--profile',$IosProfile)
+    if($Submit){$easArgs+= '--auto-submit'}
+    Invoke-Checked 'npx.cmd' $easArgs
+    if($IosProfile -eq 'preview'){
+      Write-Host 'iOS preview bygget via Expo. Registrer din iPhone med: cd expo-ios; npx eas device:create' -ForegroundColor Green
+      Write-Host 'Åbn buildets installationslink fra Expo på din registrerede iPhone.' -ForegroundColor Green
+    }elseif($Submit){
+      Write-Host 'iOS production build og TestFlight-indsendelse startet via Expo EAS.' -ForegroundColor Green
+    }else{
+      Write-Host 'iOS production build færdigt hos Expo EAS. Upload én gang med: cd expo-ios; npx eas submit --platform ios --latest' -ForegroundColor Green
+    }
   }finally{Pop-Location}
 }
