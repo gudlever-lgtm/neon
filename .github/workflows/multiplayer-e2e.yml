@@ -3,6 +3,12 @@ name: Neon multiplayer E2E
 on:
   push:
     branches: [main]
+    paths:
+      - 'server/**'
+      - 'web/**'
+      - 'test/**'
+      - 'package.json'
+      - '.github/workflows/multiplayer-e2e.yml'
   pull_request:
   workflow_dispatch:
 
@@ -62,6 +68,8 @@ jobs:
           echo 'Backend did not become healthy'
           exit 1
       - name: Run full two-player match
+        env:
+          NEON_E2E_ISOLATED_DB: '1'
         run: npm run test:e2e --prefix server
       - name: Stop isolated backend
         if: always()
