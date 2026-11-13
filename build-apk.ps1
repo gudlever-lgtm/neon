@@ -108,14 +108,28 @@ if($Target -in @('apk','aab','all')){
   if(Test-Path 'www'){Remove-Item 'www' -Recurse -Force}
   New-Item -ItemType Directory -Path 'www' | Out-Null
   Copy-Item 'web/*' 'www/' -Recurse -Force
+  $appVersion=(Get-Content 'package.json' -Raw | ConvertFrom-Json).version
+  if($appVersion -notmatch '^(\d+)\.(\d+)\.(\d+)$'){throw "Ugyldig app-version: $appVersion"}
+  $androidVersionCode=([int]$Matches[1] * 1000000) + ([int]$Matches[2] * 1000) + [int]$Matches[3]
+  Set-Content 'www/app-config.js' "window.NEON_API_BASE = ''; window.NEON_APP_VERSION = '$appVersion';" -Encoding ascii
   if($ApiUrl){
     if($ApiUrl -notmatch '^https://'){throw '-ApiUrl skal være HTTPS i produktion'}
     $clean=$ApiUrl.TrimEnd('/')
-    Set-Content 'www/app-config.js' "window.NEON_API_BASE = '$clean';" -Encoding ascii
+    Set-Content 'www/app-config.js' "window.NEON_API_BASE = '$clean'; window.NEON_APP_VERSION = '$appVersion';" -Encoding ascii
     Write-Host "Online API: $clean"
   }else{Write-Warning 'Ingen -ApiUrl: lokal Classic/Arcade virker, men online multiplayer i APK kræver et API endpoint.'}
   if(!(Test-Path 'android/gradlew.bat')){Invoke-Checked 'npx.cmd' @('cap','add','android')}
   Invoke-Checked 'npx.cmd' @('cap','sync','android')
+  # Generated Android projects otherwise keep Capacitor's default 1.0/1.
+  $gradlePath='android/app/build.gradle'
+  $gradleSource=Get-Content $gradlePath -Raw
+  if($gradleSource -notmatch 'versionName\s+"[^"]+"' -or $gradleSource -notmatch 'versionCode\s+\d+'){
+    throw 'Kunne ikke finde versionName/versionCode i Android build.gradle.'
+  }
+  $gradleSource=$gradleSource -replace 'versionName\s+"[^"]+"',"versionName `"$appVersion`""
+  $gradleSource=$gradleSource -replace 'versionCode\s+\d+',"versionCode $androidVersionCode"
+  Set-Content $gradlePath $gradleSource -Encoding UTF8
+  Write-Host "Android version: $appVersion (code $androidVersionCode)"
   # Capacitor sync can recreate default launcher resources. Reapply NEON icons every build.
   if(!(Test-Path 'generate-android-icons.ps1')){throw 'generate-android-icons.ps1 mangler. Hent seneste filer fra GitHub.'}
   & (Join-Path $ProjectRoot 'generate-android-icons.ps1') -ProjectRoot $ProjectRoot
