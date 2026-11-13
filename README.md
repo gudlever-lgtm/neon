@@ -1,6 +1,14 @@
 # Neon – Pong til mobil
 
-**Udviklingsversion:** v0.10.0 (grafik + Arcade 2.0 + Multiplayer 2.0), med automatiseret multiplayer-kontrol på vej mod v0.11.
+**Udviklingsversion:** v0.12.0 (Mobile Experience). Backend-API er fortsat v0.10.0.
+
+### v0.12: Mobile Experience
+- Flydende visning af onlinebold og modstanderbat ved hjælp af frame-uafhængig udjævning (serverfysikken ændres ikke).
+- Direkte touchfeedback med koordinattilpasning til canvas-størrelsen og begrænset WebSocket-inputfrekvens.
+- Scorepuls, tydeligere resultater og partikel-/sejrseffekter med respekt for reduceret bevægelse.
+- Indikator for **serveropdateringernes friskhed** (`LIVE`, `LANGSOM`, `AFBRUDT`) – den er ikke et præcist ping-/RTT-tal.
+- Kompakt layout til korte og smalle telefonskærme.
+- Automatiserede tests af touchkoordinater, udjævning, forbindelsesindikator og multiplayer-rendering.
 
 Neon er et gratis Pong-spil til Android med Classic, Arcade, to spillere på samme telefon og API-baseret online multiplayer. Ingen reklamer eller køb.
 

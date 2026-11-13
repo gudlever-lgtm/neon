@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const canvas = $('game'); const ctx = canvas.getContext('2d');
   const W = 390, H = 590, PADY = 40, PADH = 548, PADW = 92, PADHEIGHT = 12, BALLR = 7;
-  const game = {difficulty:'normal',stats:{played:0,wins:0,streak:0,best:0},state:'menu',mode:'classic', scoreAI:0,scorePlayer:0, playerX:W/2,aiX:W/2,ball:{x:W/2,y:H/2,vx:0,vy:0}, trail:[],particles:[],boost:2,shield:1,boostReady:false,shieldReady:false, countdown:0, matchNumber:0, flash:0, hitGlow:0, screenShake:0, arenaTime:0, arcadeChallenge:'standard', arcadeElapsed:0, pickup:null, pickupAt:8, wideUntil:0, extraBall:null, aiError:0, aiTarget:W/2, aiClock:0, pointerDown:false, activePointerId:null, multiPointers:{top:null,bottom:null}, multiHadBoth:false, pauseReason:null, sound:false, last:0,toastUntil:0};
+  const game = {difficulty:'normal',stats:{played:0,wins:0,streak:0,best:0},state:'menu',mode:'classic', scoreAI:0,scorePlayer:0, playerX:W/2,aiX:W/2,ball:{x:W/2,y:H/2,vx:0,vy:0}, visual:{x:W/2,y:H/2,aiX:W/2,playerX:W/2}, trail:[],particles:[],boost:2,shield:1,boostReady:false,shieldReady:false, countdown:0, matchNumber:0, flash:0, hitGlow:0, screenShake:0, arenaTime:0, arcadeChallenge:'standard', arcadeElapsed:0, pickup:null, pickupAt:8, wideUntil:0, extraBall:null, aiError:0, aiTarget:W/2, aiClock:0, pointerDown:false, activePointerId:null, multiPointers:{top:null,bottom:null}, multiHadBoth:false, pauseReason:null, sound:false, last:0,toastUntil:0};
   const arcade=window.NeonArcade;
   let audio;
   try { const saved=JSON.parse(localStorage.getItem('neon-rally-settings')||'{}'); if(['easy','normal','hard'].includes(saved.difficulty)) game.difficulty=saved.difficulty; game.sound=!!saved.sound; }catch(_){}
@@ -20,6 +20,7 @@
   function overlay(kicker,title,desc,btn,tip,select){$('overlay-kicker').textContent=kicker; $('overlay-title').innerHTML=title; $('overlay-desc').innerHTML=desc; $('main-action').innerHTML=btn+' <span>➜</span>'; $('overlay-tip').textContent=tip; $('mode-select').hidden=!select; $('overlay').classList.toggle('compact',!select);$('menu-config').hidden=!select;$('overlay-home').classList.toggle('hidden',select);$('overlay').classList.remove('hidden');}
   function hideOverlay(){$('overlay').classList.add('hidden');$('overlay').classList.remove('compact')}
   function showToast(t){$('toast').textContent=t;$('toast').classList.remove('hidden');game.toastUntil=performance.now()+1000}
+  function scorePulse(id){const el=$(id);el.classList.remove('score-pop');void el.offsetWidth;el.classList.add('score-pop')}
   function chooseMode(mode){if(game.state!=='menu'||!['classic','arcade','versus'].includes(mode))return;game.mode=mode;for(const m of ['classic','arcade','versus'])$(m+'-mode').classList.toggle('active',mode===m);$('multiplayer-help').classList.toggle('hidden',mode!=='versus');document.querySelector('.difficulty').classList.toggle('hidden',mode==='versus');$('arcade-challenges').classList.toggle('hidden',mode!=='arcade');updateUI()}
   function resetBall(direction){game.pauseReason=null;if(game.mode!=='versus'){game.pointerDown=false;game.activePointerId=null;}game.ball={x:W/2,y:H/2,vx:(Math.random()>.5?1:-1)*105,vy:direction*270};game.trail=[];game.extraBall=null;game.aiClock=0;game.aiTarget=W/2;game.countdown=.8;game.state='playing';updateUI()}
   function startGame(){game.arcadeElapsed=0;game.pickup=null;game.extraBall=null;game.pickupAt=arcade.config(game.arcadeChallenge).pickupEvery;game.wideUntil=0;game.arenaTime=0;game.pauseReason=null;game.pointerDown=false;game.activePointerId=null;game.multiPointers={top:null,bottom:null};game.multiHadBoth=false;hideTouchPause();game.scoreAI=0;game.scorePlayer=0;game.playerX=W/2;game.aiX=W/2;game.boost=2;game.shield=1;game.boostReady=false;game.shieldReady=false;game.matchNumber++;hideOverlay();resetBall(Math.random()>.5?1:-1);if(game.mode==='versus')setPaused(true,'touch');tone(550,.15)}
@@ -33,7 +34,7 @@
       if(!window.confirm('Afslut kampen og gå til forsiden?'))return;
     }
     if(game.mode==='online'&&game.state==='online-finished'){game.mode='classic';game.state='menu';window.NeonRallyBridge.openLobby();window.NeonRallyOnline?.open();return}
-    game.mode='classic';game.state='menu';game.pauseReason=null;game.pointerDown=false;game.activePointerId=null;game.multiPointers={top:null,bottom:null};game.multiHadBoth=false;
+    game.mode='classic';game.state='menu';game.pauseReason=null;game.pointerDown=false;game.activePointerId=null;game.multiPointers={top:null,bottom:null};game.multiHadBoth=false;$('overlay').classList.remove('result-win','result-loss');
     game.countdown=0;game.trail=[];game.particles=[];game.flash=0;
     game.scoreAI=0;game.scorePlayer=0;game.playerX=W/2;game.aiX=W/2;
     game.boostReady=false;game.shieldReady=false;
@@ -63,12 +64,12 @@
       game.stats.played++;if(win){game.stats.wins++;game.stats.streak++;game.stats.best=Math.max(game.stats.best,game.stats.streak)}else game.stats.streak=0;
       saveStats();renderStats();
     }
-    celebrate(W/2,H/2,win?'#36f4ff':'#f25aff',34);tone(win?880:170,.35,'triangle');
+    celebrate(W/2,H/2,win?'#36f4ff':'#f25aff',34);$('overlay').classList.toggle('result-win',win);$('overlay').classList.toggle('result-loss',!win);tone(win?880:170,.35,'triangle');
     const title=outcome==='draw'?'<em>UAFGJORT!</em>':game.mode==='versus'?(win?'SPILLER 1 <em>VINDER!</em>':'SPILLER 2 <em>VINDER!</em>'):(win?'DU <em>VANDT!</em>':'PRØV <em>IGEN</em>');
     const desc=game.mode==='versus'?`SPILLER 1 ${game.scorePlayer} – ${game.scoreAI} SPILLER 2`:`${game.scorePlayer} – ${game.scoreAI}<br>${win?'Fantastisk spillet!':'Computeren tog denne runde.'}`;
     overlay('KAMP SLUT',title,desc,'SPIL IGEN',game.mode==='versus'?'Begge spillere skal holde fingeren på banen.':'Ny kamp starter med samme spiltype.',false);updateUI();
   }
-  function point(toPlayer){if(toPlayer)game.scorePlayer++;else game.scoreAI++;game.flash=1;rumble(toPlayer?26:65);particles(W/2,H/2,toPlayer?'#30efff':'#fa5cde',18);showToast(game.mode==='versus'?(toPlayer?'POINT TIL SPILLER 1!':'POINT TIL SPILLER 2!'):(toPlayer?'POINT TIL DIG!':'POINT TIL COMPUTEREN'));tone(toPlayer?730:170,.22,'sawtooth',.016);if(game.scorePlayer>=7||game.scoreAI>=7){finish();return}resetBall(toPlayer?1:-1)}
+  function point(toPlayer){if(toPlayer)game.scorePlayer++;else game.scoreAI++;scorePulse(toPlayer?'player-score':'ai-score');game.flash=1;rumble(toPlayer?26:65);particles(W/2,H/2,toPlayer?'#30efff':'#fa5cde',18);showToast(game.mode==='versus'?(toPlayer?'POINT TIL SPILLER 1!':'POINT TIL SPILLER 2!'):(toPlayer?'POINT TIL DIG!':'POINT TIL COMPUTEREN'));tone(toPlayer?730:170,.22,'sawtooth',.016);if(game.scorePlayer>=7||game.scoreAI>=7){finish();return}resetBall(toPlayer?1:-1)}
   function particles(x,y,color,n=9){if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)n=Math.min(n,5);for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,s=30+Math.random()*130;game.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.35+Math.random()*.3,color})}}
   function update(dt){if(game.state!=='playing')return;game.arenaTime+=dt;game.screenShake=Math.max(0,game.screenShake-35*dt);game.hitGlow=Math.max(0,game.hitGlow-4*dt);if(game.countdown>0){game.countdown=Math.max(0,game.countdown-dt);return}
     const b=game.ball;const beforeY=b.y;
@@ -149,13 +150,13 @@
       const p=game.pickup;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(game.arenaTime*.7);ctx.shadowBlur=25;ctx.shadowColor='#ffd86b';ctx.fillStyle='#201b38';ctx.strokeStyle='#ffd86b';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-16,-16,32,32,7);ctx.fill();ctx.stroke();ctx.restore();
       ctx.save();ctx.fillStyle='#fff0b0';ctx.font='bold 17px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.type==='wide'?'W':p.type==='slow'?'S':p.type==='shield'?'+':'×2',p.x,p.y);ctx.restore();
     }
-    drawPaddle(game.aiX,PADY,'#23e9f3');drawPaddle(game.playerX,PADH,'#eb52ef',playerPadWidth());
+    drawPaddle(game.mode==='online'?game.visual.aiX:game.aiX,PADY,'#23e9f3');drawPaddle(game.mode==='online'?game.visual.playerX:game.playerX,PADH,'#eb52ef',playerPadWidth());
     // Soft continuous glow and a dotted tail provide speed feedback without altering physics.
     if(game.trail.length>1){ctx.save();ctx.lineCap='round';for(let i=1;i<game.trail.length;i++){const a=game.trail[i-1],c=game.trail[i],f=Math.max(0,c.life/.36);ctx.strokeStyle=`rgba(32,210,255,${f*.30})`;ctx.lineWidth=1+f*9;ctx.shadowBlur=12;ctx.shadowColor='#29bcff';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(c.x,c.y);ctx.stroke()}ctx.restore()}
     for(const t of game.trail){ctx.beginPath();ctx.fillStyle=`rgba(100,230,255,${(t.life/.36)*.22})`;ctx.arc(t.x,t.y,BALLR*.65*(t.life/.36),0,Math.PI*2);ctx.fill()}
     for(const p of game.particles){ctx.globalAlpha=clamp(p.life/.6,0,1);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,3,3)}ctx.globalAlpha=1;
     if(game.mode==='arcade'&&game.extraBall){const b=game.extraBall;ctx.save();ctx.shadowBlur=23;ctx.shadowColor='#ff65df';ctx.fillStyle='#fff2fa';ctx.beginPath();ctx.arc(b.x,b.y,BALLR,0,Math.PI*2);ctx.fill();ctx.restore()}
-    const b=game.ball;ctx.save();ctx.shadowBlur=23;ctx.shadowColor='#43cfff';ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(b.x,b.y,BALLR,0,Math.PI*2);ctx.fill();ctx.restore();
+    const b=game.mode==='online'?game.visual:game.ball;ctx.save();ctx.shadowBlur=23;ctx.shadowColor='#43cfff';ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(b.x,b.y,BALLR,0,Math.PI*2);ctx.fill();ctx.restore();
     if(game.boostReady){ctx.save();ctx.strokeStyle='#f7c95d';ctx.shadowBlur=18;ctx.shadowColor='#edc252';ctx.lineWidth=2;ctx.strokeRect(game.playerX-PADW/2-4,PADH-PADHEIGHT/2-5,PADW+8,PADHEIGHT+10);ctx.restore()}
     if(game.hitGlow>0){ctx.save();ctx.strokeStyle='rgba(255,255,255,'+(game.hitGlow*.35)+')';ctx.lineWidth=2+game.hitGlow*6;ctx.strokeRect(8,8,W-16,H-16);ctx.restore()}
     if(game.flash>0){ctx.fillStyle=`rgba(255,255,255,${game.flash*.08})`;ctx.fillRect(0,0,W,H)}
@@ -164,8 +165,20 @@
   }
   function drawPaddle(x,y,color,width=PADW){ctx.save();ctx.shadowBlur=21;ctx.shadowColor=color;ctx.fillStyle=color;roundRect(ctx,x-width/2,y-PADHEIGHT/2,width,PADHEIGHT,6);ctx.fill();ctx.fillStyle='#ffffff88';roundRect(ctx,x-width/2+5,y-PADHEIGHT/2+2,width-10,3,2);ctx.fill();ctx.restore()}
   function roundRect(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r)}
-  function frame(time){const dt=game.last?Math.min((time-game.last)/1000,.032):0;game.last=time;update(dt);draw();if(game.toastUntil&&time>game.toastUntil){$('toast').classList.add('hidden');game.toastUntil=0}requestAnimationFrame(frame)}
-  function pointerPosition(e){const r=canvas.getBoundingClientRect();return clamp((e.clientX-r.left)/r.width*W,PADW/2+16,W-PADW/2-16)}
+  function frame(time){const dt=game.last?Math.min((time-game.last)/1000,.032):0;game.last=time;update(dt);if(game.state==='finished'){
+    for(const p of game.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}game.particles=game.particles.filter(p=>p.life>0);game.flash=Math.max(0,game.flash-2*dt);game.screenShake=Math.max(0,game.screenShake-35*dt);
+  }if(game.mode==='online'&&(game.state==='online'||game.state==='online-finished')){
+    const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const v=game.visual,b=game.ball;
+    if(reduced||Math.hypot(v.x-b.x,v.y-b.y)>105){v.x=b.x;v.y=b.y;game.trail=[]}
+    else {v.x=window.NeonMobile.ease(v.x,b.x,dt,23);v.y=window.NeonMobile.ease(v.y,b.y,dt,23)}
+    v.aiX=window.NeonMobile.ease(v.aiX,game.aiX,dt,17);
+    v.playerX=window.NeonMobile.ease(v.playerX,game.playerX,dt,28);
+    if(!reduced&&dt>0){game.trail.push({x:v.x,y:v.y,life:.25});if(game.trail.length>12)game.trail.shift()}
+    for(const t of game.trail)t.life-=dt;game.trail=game.trail.filter(t=>t.life>0);
+    for(const p of game.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}game.particles=game.particles.filter(p=>p.life>0);game.flash=Math.max(0,game.flash-2*dt);game.screenShake=Math.max(0,game.screenShake-35*dt);
+  }draw();if(game.toastUntil&&time>game.toastUntil){$('toast').classList.add('hidden');game.toastUntil=0}requestAnimationFrame(frame)}
+  function pointerPosition(e){return window.NeonMobile.boardX(e.clientX,canvas.getBoundingClientRect(),W,PADW)}
   function pointerSide(e){const r=canvas.getBoundingClientRect();return ((e.clientY-r.top)/r.height)<.5?'top':'bottom'}
   function bothPresent(){return game.multiPointers.top!==null&&game.multiPointers.bottom!==null}
   function move(e){
@@ -176,7 +189,7 @@
     }else game.playerX=pointerPosition(e);
   }
   canvas.addEventListener('pointerdown',e=>{
-    if(game.mode==='online' && game.state==='online'){game.activePointerId=e.pointerId;try{canvas.setPointerCapture(e.pointerId)}catch(_){};window.NeonRallyOnline?.sendX(pointerPosition(e));return}
+    if(game.mode==='online' && game.state==='online'){if(game.activePointerId!==null)return;game.activePointerId=e.pointerId;try{canvas.setPointerCapture(e.pointerId)}catch(_){};game.playerX=pointerPosition(e);game.visual.playerX=game.playerX;window.NeonRallyOnline?.sendX(game.playerX);return}
     if(game.state!=='playing'&&!(game.state==='paused'&&game.pauseReason==='touch'))return;
     if(game.mode==='versus'){
       const side=pointerSide(e);
@@ -199,7 +212,7 @@
     move(e);
   });
   canvas.addEventListener('pointermove',e=>{
-    if(game.mode==='online' && game.state==='online'){if(game.activePointerId===e.pointerId)window.NeonRallyOnline?.sendX(pointerPosition(e));return}
+    if(game.mode==='online' && game.state==='online'){if(game.activePointerId===e.pointerId){const last=e.getCoalescedEvents?.().at(-1)||e;game.playerX=pointerPosition(last);game.visual.playerX=game.playerX;window.NeonRallyOnline?.sendX(game.playerX)}return}
     if(game.mode==='versus'){
       if(game.multiPointers.top===e.pointerId||game.multiPointers.bottom===e.pointerId)move(e);
     }else if(game.activePointerId===e.pointerId&&game.pointerDown)move(e);
@@ -238,9 +251,10 @@
   window.NeonRallyBridge={
     openLobby(){if(game.mode==='online'&&game.state==='online')return;game.state='menu';game.mode='classic';$('online-lobby').classList.remove('hidden');document.querySelector('.game-shell').hidden=true;updateUI()},
     closeLobby(){ $('online-lobby').classList.add('hidden');document.querySelector('.game-shell').hidden=false;goHome()},
-    startOnline(m){ $('online-lobby').classList.add('hidden');document.querySelector('.game-shell').hidden=false;game.mode='online';game.state='online';game.activePointerId=null;game.trail=[];game.scoreAI=0;game.scorePlayer=0;game.aiX=W/2;game.playerX=W/2;game.onlineSide=window.NeonRallyOnline?.side;hideOverlay();hideTouchPause();updateUI();showToast('ONLINE KAMP STARTER!')},
-    snapshot(m){if(game.mode!=='online'||game.state!=='online')return;const s=window.NeonRallyOnline?.side;if(!s)return;const bx=game.ball.x,by=game.ball.y;game.aiX=s==='top'?m.bottomX:m.topX;game.playerX=s==='top'?m.topX:m.bottomX;game.scoreAI=s==='top'?m.bottomScore:m.topScore;game.scorePlayer=s==='top'?m.topScore:m.bottomScore;game.ball={x:m.ball.x,y:s==='top'?H-m.ball.y:m.ball.y,vx:0,vy:0};if(Math.hypot(bx-game.ball.x,by-game.ball.y)<85){game.trail.push({x:game.ball.x,y:game.ball.y,life:.36});if(game.trail.length>16)game.trail.shift()}else game.trail=[];for(const t of game.trail)t.life-=.05;game.trail=game.trail.filter(t=>t.life>0);$('top-label').textContent='MODSTANDER';$('bottom-label').textContent='DIG';$('ai-score').textContent=game.scoreAI;$('player-score').textContent=game.scorePlayer;$('state-tag').textContent=m.readyMs>0?'KLAR?':'LIVE · FØRST TIL 7'},
-    finishOnline(m){if(game.mode!=='online')return;const isTop=window.NeonRallyOnline?.side==='top';game.scorePlayer=isTop?m.topScore:m.bottomScore;game.scoreAI=isTop?m.bottomScore:m.topScore;game.state='online-finished';const win=m.winnerId===window.NeonRallyOnline?.player?.id;overlay('ONLINE KAMP SLUT',win?'DU <em>VANDT!</em>':'DU <em>TABTE</em>',`Resultat ${game.scorePlayer} – ${game.scoreAI}`,'TIL FORSIDE','Se Top 10 og find nye modstandere.',false);$('main-action').onclick=()=>{game.mode='classic';game.state='menu';window.NeonRallyBridge.openLobby();window.NeonRallyOnline?.open()};updateUI()}
+    startOnline(m){ $('online-lobby').classList.add('hidden');document.querySelector('.game-shell').hidden=false;game.mode='online';game.state='online';game.activePointerId=null;game.trail=[];game.scoreAI=0;game.scorePlayer=0;game.aiX=W/2;game.playerX=W/2;game.visual={x:W/2,y:H/2,aiX:W/2,playerX:W/2};game.onlineSide=window.NeonRallyOnline?.side;hideOverlay();hideTouchPause();$('overlay').classList.remove('result-win','result-loss');updateUI();showToast('ONLINE KAMP STARTER!')},
+    snapshot(m){if(game.mode!=='online'||game.state!=='online')return;const s=window.NeonRallyOnline?.side;if(!s||!m.ball)return;const priorAI=game.scoreAI,priorPlayer=game.scorePlayer;game.aiX=s==='top'?m.bottomX:m.topX;game.playerX=s==='top'?m.topX:m.bottomX;game.scoreAI=s==='top'?m.bottomScore:m.topScore;game.scorePlayer=s==='top'?m.topScore:m.bottomScore;game.ball={x:m.ball.x,y:s==='top'?H-m.ball.y:m.ball.y,vx:0,vy:0};if(game.scoreAI!==priorAI||game.scorePlayer!==priorPlayer){const playerScored=game.scorePlayer!==priorPlayer;scorePulse(playerScored?'player-score':'ai-score');particles(W/2,H/2,playerScored?'#36f4ff':'#ee4ef2',16);game.flash=.65;tone(playerScored?680:290,.12)}$('top-label').textContent='MODSTANDER';$('bottom-label').textContent='DIG';$('ai-score').textContent=game.scoreAI;$('player-score').textContent=game.scorePlayer;$('state-tag').textContent=m.readyMs>0?'KLAR?':'LIVE · FØRST TIL 7'},
+    connection(level){const el=$('connection-quality');if(!el)return;el.classList.toggle('hidden',level==='hidden'||game.mode!=='online');el.className='connection-quality '+level+(level==='hidden'||game.mode!=='online'?' hidden':'');el.textContent=level==='good'?'● LIVE':level==='slow'?'● LANGSOM':level==='lost'?'● AFBRUDT':'● FORBINDER'},
+    finishOnline(m){if(game.mode!=='online')return;const isTop=window.NeonRallyOnline?.side==='top';game.scorePlayer=isTop?m.topScore:m.bottomScore;game.scoreAI=isTop?m.bottomScore:m.topScore;game.state='online-finished';const win=m.winnerId===window.NeonRallyOnline?.player?.id;celebrate(W/2,H/2,win?'#36f4ff':'#f25aff',win?48:20);scorePulse(win?'player-score':'ai-score');$('overlay').classList.toggle('result-win',win);$('overlay').classList.toggle('result-loss',!win);overlay('ONLINE KAMP SLUT',win?'DU <em>VANDT!</em>':'DU <em>TABTE</em>',`Resultat ${game.scorePlayer} – ${game.scoreAI}`,'TIL FORSIDE','Se Top 10 og find nye modstandere.',false);$('main-action').onclick=()=>{game.mode='classic';game.state='menu';window.NeonRallyBridge.openLobby();window.NeonRallyOnline?.open()};updateUI()}
   };
   game.state='menu';chooseMode('classic');updateUI();requestAnimationFrame(frame);
 })();

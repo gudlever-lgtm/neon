@@ -1,5 +1,11 @@
 # Neon – udviklingsplan og afleveringskontrol
 
+## V0.12 – Mobile Experience
+
+**Implementeret:** Glattere online-visning via render-interpolation uden at ændre serverens autoritative fysik; direkte touch-position og op til cirka 30 batopdateringer i sekundet; forbedret score- og sejrfeedback; indikator for friskhed af WebSocket-spiltilstand; tilpasning af banens skærmstørrelse. Bevarer reduceret bevægelse og eksisterende Classic/Arcade/Multiplayer-funktioner.
+
+**Test:** 21 Node-tests samt syntakskontrol af frontend. **Mangler:** virkelig APK-/hardwaretest på to telefoner, især på langsomme forbindelser, små skærme og Androids systemnavigation. Der er ikke bygget nogen APK.
+
 ## V0.8 – Grafik og animationer
 **Implementeret:** Neonbane med puls/glød, kontaktfeedback og visuel rystelse, forbedrede knaptilstande og respekt for `prefers-reduced-motion`.
 

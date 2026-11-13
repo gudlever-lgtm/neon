@@ -1,6 +1,6 @@
 {
   "name": "neon",
-  "version": "0.10.0",
+  "version": "0.12.0",
   "private": true,
   "scripts": {
     "android:sync": "npx cap sync android",

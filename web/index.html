@@ -20,7 +20,7 @@
     <section class="game-shell" aria-label="Pong spil">
       <div class="scorebar">
         <div class="score-item"><span id="top-label">COMPUTER</span><strong id="ai-score">0</strong></div>
-        <div class="center-status"><span id="mode-tag">CLASSIC MODE</span><small id="state-tag">FØRST TIL 7</small></div>
+        <div class="center-status"><span id="mode-tag">CLASSIC MODE</span><small id="state-tag">FØRST TIL 7</small><small id="connection-quality" class="connection-quality hidden" aria-live="polite">● FORBINDER</small></div>
         <div class="score-item you"><span id="bottom-label">DIG</span><strong id="player-score">0</strong></div>
         <button id="home" type="button" class="pause-btn home-btn" aria-label="Gå til forside" title="Gå til forside">⌂</button>
         <button id="pause" type="button" class="pause-btn" aria-label="Pause" title="Pause">Ⅱ</button>
@@ -75,10 +75,11 @@
         <div class="online-section"><h3>SENESTE ONLINEKAMPE</h3><div id="match-history" class="online-list"></div></div>
       </div>
     </section>
-    <footer>NEON v0.10 · ANDROID APK / IOS EXPO</footer>
+    <footer>NEON v0.12 · ANDROID / IOS</footer>
   </main>
   <script src="app-config.js" defer></script>
   <script src="arcade-rules.js" defer></script>
+  <script src="mobile-utils.js" defer></script>
   <script src="game.js" defer></script>
   <script src="online.js" defer></script>
 </body>
