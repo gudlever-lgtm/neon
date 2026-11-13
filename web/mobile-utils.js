@@ -11,7 +11,8 @@
     if(!Number.isFinite(current))return target;
     return current+(target-current)*(1-Math.exp(-Math.max(0,dt)*rate));
   };
-  const quality=(ageMs,intervalMs)=>{
+  const quality=(ageMs,intervalMs,connected=true)=>{
+    if(!connected)return 'lost';
     if(!Number.isFinite(ageMs)||ageMs>1700)return 'lost';
     if(ageMs>450||intervalMs>190)return 'slow';
     return 'good';

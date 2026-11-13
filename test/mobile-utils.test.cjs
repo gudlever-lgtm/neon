@@ -28,4 +28,5 @@ test('connection indicator represents snapshot freshness, not invented ping',()=
   assert.equal(quality(700,50),'slow');
   assert.equal(quality(1900,50),'lost');
   assert.equal(quality(Infinity,50),'lost');
+  assert.equal(quality(20,50,false),'lost');
 });
