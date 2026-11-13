@@ -10,7 +10,8 @@
     "start": "node src/index.js",
     "check": "node --check src/index.js && node --test test/*.test.js",
     "test": "node --test test/*.test.js",
-    "test:e2e": "node scripts/multiplayer-e2e.mjs"
+    "test:e2e": "node scripts/multiplayer-e2e.mjs",
+    "test:reliability": "node scripts/multiplayer-reliability.mjs"
   },
   "dependencies": {
     "express": "^4.21.2",
