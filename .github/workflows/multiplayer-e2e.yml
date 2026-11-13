@@ -71,6 +71,10 @@ jobs:
         env:
           NEON_E2E_ISOLATED_DB: '1'
         run: npm run test:e2e --prefix server
+      - name: Verify reconnection, disconnect and settlement reliability
+        env:
+          NEON_E2E_ISOLATED_DB: '1'
+        run: npm run test:reliability --prefix server
       - name: Stop isolated backend
         if: always()
         run: |
