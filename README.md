@@ -54,6 +54,7 @@ Lokalt, **kun med en separat testdatabase** og en Neon-server på `127.0.0.1:310
 
 ```bash
 cd server
+export NEON_E2E_ISOLATED_DB=1
 npm run test:e2e
 ```
 
