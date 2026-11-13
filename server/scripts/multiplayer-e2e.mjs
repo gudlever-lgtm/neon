@@ -17,6 +17,10 @@ if (publicWrite && process.env.NEON_E2E_ALLOW_PUBLIC !== '1') {
   console.error('Public writes blocked: set NEON_E2E_ALLOW_PUBLIC=1 explicitly.');
   process.exit(2);
 }
+if (!publicWrite && process.env.NEON_E2E_ISOLATED_DB !== '1') {
+  console.error('Local writes blocked: use an isolated test DB and set NEON_E2E_ISOLATED_DB=1.');
+  process.exit(2);
+}
 const base = (publicWrite
   ? process.env.NEON_PUBLIC_URL || 'https://dulmens.dk/neon'
   : process.env.NEON_E2E_URL || 'http://127.0.0.1:3100').replace(/\/$/, '');
