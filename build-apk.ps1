@@ -113,11 +113,10 @@ if($Target -in @('apk','aab','all')){
   }finally{Pop-Location}
 }
 if($Target -in @('ios','all')){
-  if(-not $ExpoUrl -or $ExpoUrl -notmatch '^https://'){throw 'iOS EAS kræver -ExpoUrl https://din-offentlige-spiladresse (WebView viser den hostede app)'}
   if(!(Test-Path 'expo-ios/package.json')){throw 'expo-ios-projekt mangler'}
+  Invoke-Checked 'node' @('scripts/build-ios-web.mjs')
   Push-Location 'expo-ios'
   try{
-    $env:EXPO_PUBLIC_GAME_URL=$ExpoUrl
     if(-not $SkipInstall -or !(Test-Path 'node_modules')){Invoke-Checked 'npm.cmd' @('install')}
     Invoke-Checked 'npx.cmd' @('eas','build','--platform','ios','--profile','production')
     Write-Host 'iOS build bestilt hos Expo EAS. Hent IPA fra EAS, hvis build og signing lykkes.' -ForegroundColor Green

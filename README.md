@@ -16,7 +16,7 @@ Neon er et gratis Pong-spil til Android med Classic, Arcade, to spillere på sam
 
 - `web/`: HTML5/Canvas-spillet (pakkes i Android-appen via Capacitor)
 - `server/`: Node.js REST + WebSocket og MariaDB
-- `expo-ios/`: iOS-skal via Expo EAS (kræver særskilt validering af hostet spil-URL)
+- `expo-ios/`: iOS via Expo EAS med indbygget offline-spil (Classic/Arcade); online multiplayer kræver internet
 - `landing/`: offentlig installationsside på `https://dulmens.dk/neon/`
 - `test/`: Arcade-regler og UI-smoketests
 - `build-apk.ps1`: Windows-build (APK/AAB) og iOS gennem EAS
@@ -82,6 +82,22 @@ cd E:\neon
 - Der uploades **ikke** automatisk
 - API-basen er `https://dulmens.dk/neon` (uden `/api`); websocket-adressen er `wss://dulmens.dk/neon/ws`
 - Android bygger med lokal JDK 21 + SDK; iOS er konfigureret til Expo EAS
+
+## iOS via Expo.dev (offline-spil)
+
+Neon indlæses fra et indbygget HTML/CSS/JS-bundle på iOS. Classic og Arcade starter derfor uden internet. Online multiplayer anvender fortsat `https://dulmens.dk/neon` og kræver forbindelse. Opdater bundlet efter ændringer i `web/`:
+
+```powershell
+cd E:\neon
+git pull --ff-only origin main
+node scripts/build-ios-web.mjs
+cd expo-ios
+npm install
+npx eas-cli login
+npx eas-cli build --platform ios --profile production
+```
+
+Alternativt bygger `./build-apk.ps1 -Target ios -SkipPull` det lokale bundle før EAS-build. iOS-signering og distribution kræver Apple Developer-adgang. Expo-projektet bygger en iOS-app; der er ikke lavet nogen IPA i repositoryet.
 
 **Ingen APK er bygget som led i v0.8–v0.10-ændringerne.**
 

@@ -3,7 +3,7 @@
     "name": "Neon",
     "slug": "neon",
     "scheme": "neon",
-    "version": "0.6.0",
+    "version": "0.12.0",
     "orientation": "portrait",
     "ios": {
       "bundleIdentifier": "dk.dulmens.neon",
