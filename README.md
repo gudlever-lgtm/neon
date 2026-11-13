@@ -1,6 +1,6 @@
 # Neon – Pong til mobil
 
-**Udviklingsversion:** v0.10.0 (grafik + Arcade 2.0 + Multiplayer 2.0).
+**Udviklingsversion:** v0.10.0 (grafik + Arcade 2.0 + Multiplayer 2.0), med automatiseret multiplayer-kontrol på vej mod v0.11.
 
 Neon er et gratis Pong-spil til Android med Classic, Arcade, to spillere på samme telefon og API-baseret online multiplayer. Ingen reklamer eller køb.
 
@@ -46,6 +46,19 @@ npm test
 
 Tester regler, grafisk spilinitialisering (mocked Canvas) og eksisterende serverfysik/adgangskodefunktioner. Dette erstatter **ikke** faktisk test med MariaDB, lighttpd, WebSocket og to Android-enheder.
 
+### Automatisk test med to spillere
+
+GitHub Actions kører `.github/workflows/multiplayer-e2e.yml` ved push og pull request. Workflowet starter en **midlertidig MariaDB**, indlæser `server/sql/schema.sql`, starter Neon-serveren og gennemfører en rigtig kamp med to oprettede testkonti og to WebSockets. Det kontrollerer kampresultat, historik, profiler og rangliste. Testdata forsvinder med den midlertidige database; produktionsdatabasen berøres ikke.
+
+Lokalt, **kun med en separat testdatabase** og en Neon-server på `127.0.0.1:3100`:
+
+```bash
+cd server
+npm run test:e2e
+```
+
+En skrivende test mod den offentlige server kan kun startes eksplicit med `--public-write` og `NEON_E2E_ALLOW_PUBLIC=1`. Den opretter rigtige konti og kampe, og **sletter ikke automatisk data**. Brug den først efter særskilt godkendelse og med plan for oprydning. Den er ikke en del af GitHub-workflowet.
+
 ## Android-build på Windows
 
 ```powershell
@@ -63,7 +76,7 @@ cd E:\neon
 
 ## Eksisterende driftsopsætning
 
-Backend forbliver i `/var/www/dulmens.dk/neon/server/` og systemd-servicen `neon-rally.service` bevares. DB-navnet `neon_rally` og de gamle localStorage-nøgler bevares af hensyn til kompatibilitet.
+Backend forbliver i `/var/www/dulmens.dk/neon-backend/server/` og systemd-servicen `neon-rally.service` bevares. DB-navnet `neon_rally` og de gamle localStorage-nøgler bevares af hensyn til kompatibilitet. Det synlige produktnavn er udelukkende **Neon**; de tekniske navne kan ændres ved en særskilt, planlagt migration.
 
 Offentlige stier:
 - `/neon/` installationsside
