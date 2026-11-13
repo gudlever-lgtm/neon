@@ -28,7 +28,10 @@ function scenario(){
  const sandbox={window,document,navigator:{vibrate:noop},localStorage:{getItem:()=>null,setItem:noop},performance:{now:()=>clock},requestAnimationFrame:fn=>{frame=fn},Math,console};
  vm.runInNewContext(fs.readFileSync(path.join(web,'arcade-rules.js'),'utf8'),sandbox);
  vm.runInNewContext(fs.readFileSync(path.join(web,'mobile-utils.js'),'utf8'),sandbox);
- vm.runInNewContext(fs.readFileSync(path.join(web,'game.js'),'utf8'),sandbox);
+ const gameSource=fs.readFileSync(path.join(web,'game.js'),'utf8');
+ const testHook="window.__neonSmoke={point,playerX:()=>game.playerX};";
+ assert.ok(gameSource.includes("game.state='menu';chooseMode('classic');updateUI();"),'smoke-test hook insertion point missing');
+ vm.runInNewContext(gameSource.replace("game.state='menu';chooseMode('classic');updateUI();",testHook+"game.state='menu';chooseMode('classic');updateUI();"),sandbox);
  return {node,window,challenge:id=>node(id).handlers.click(),mode:id=>node(id+'-mode').onclick(),start:()=>node('main-action').onclick(),tick:n=>{for(let i=0;i<n;i++){clock+=32;frame(clock)}}};
 }
 test('Neon game initializes and draws Classic without runtime errors',()=>{
@@ -58,4 +61,16 @@ test('Mobile multiplayer updates score and connection quality without render err
  assert.equal(s.node('connection-quality').textContent,'● LANGSOM');
  s.window.NeonRallyBridge.finishOnline({winnerId:2,topScore:3,bottomScore:7});s.tick(6);
  assert.match(s.node('overlay-title').innerHTML,/VANDT/);
+});
+test('touch paddle keeps moving while finger stays down across a scored point',()=>{
+ const s=scenario();s.start();
+ const canvas=s.node('game');
+ canvas.handlers.pointerdown({pointerId:11,pointerType:'touch',clientX:120,clientY:540});
+ assert.equal(s.window.__neonSmoke.playerX(),120);
+ s.window.__neonSmoke.point(true);
+ canvas.handlers.pointermove({pointerId:11,pointerType:'touch',clientX:300,clientY:540});
+ assert.equal(s.window.__neonSmoke.playerX(),300);
+ canvas.handlers.pointerup({pointerId:11,pointerType:'touch'});
+ canvas.handlers.pointermove({pointerId:11,pointerType:'touch',clientX:90,clientY:540});
+ assert.equal(s.window.__neonSmoke.playerX(),300);
 });
