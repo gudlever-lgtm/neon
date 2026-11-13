@@ -11,12 +11,15 @@ Mappen `landing/` er en statisk installationsside, der **ikke** skal indgå i Ca
    install -d -m 0755 /var/www/dulmens.dk/neon-public
    install -m 0644 landing/index.html /var/www/dulmens.dk/neon-public/index.html
    install -m 0644 landing/icon.svg /var/www/dulmens.dk/neon-public/icon.svg
+   install -d -m 0755 /var/www/dulmens.dk/neon-public/privacy
+   install -m 0644 landing/privacy/index.html /var/www/dulmens.dk/neon-public/privacy/index.html
    ```
 
 3. Kontrollér at disse routingregler fortsat virker, inden du sætter siden i drift:
    - `/neon/api/*` => Node.js `127.0.0.1:3100/api/*` (REST; bevar /api-prefix på upstream)
    - `/neon/ws` => Node.js `127.0.0.1:3100/ws` (WebSocket upgrade)
    - `/neon/` => statisk landing/index.html
+   - `/neon/privacy/` => statisk landing/privacy/index.html (offentlig privatlivspolitik til App Store Connect)
    - `/downloads/neon.apk` => fysisk APK på webserveren
 
 Det er vigtigt, at routing for API/WebSocket har højere prioritet end den statiske side. Blokér offentlig adgang til `server/`, `.env`, SQL og andre interne projektfiler. Test at `https://dulmens.dk/neon/server/.env` **ikke** kan downloades. Ændr ikke lighttpd-konfiguration uden at kontrollere den eksisterende vhost først.

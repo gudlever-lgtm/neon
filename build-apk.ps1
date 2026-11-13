@@ -4,7 +4,8 @@
 .EXAMPLE
   .\build-apk.ps1 -Platform apk
   .\build-apk.ps1 -Platform aab -SkipPull
-  .\build-apk.ps1 -Platform ios -IosProfile preview
+  .\build-apk.ps1 -Platform ios -RegisterIosDevice
+  .\build-apk.ps1 -Platform ios
   .\build-apk.ps1 -Platform ios -IosProfile production -Submit
   .\build-apk.ps1 -Target all
 #>
@@ -14,7 +15,8 @@ param(
   [string]$ProjectRoot=$PSScriptRoot,
   [string]$AndroidSdk='E:\Android',
   [string]$ApiUrl='https://dulmens.dk/neon',
-  [ValidateSet('preview','production')][string]$IosProfile='production',
+  [ValidateSet('preview','production')][string]$IosProfile='preview',
+  [switch]$RegisterIosDevice,
   [switch]$Submit,
   [string]$OutputDirectory=(Join-Path $env:USERPROFILE 'Downloads'),
   [switch]$SkipPull,
@@ -24,6 +26,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 if($Submit -and $Target -notin @('ios','all')){throw '-Submit kan kun bruges med -Platform ios eller all.'}
 if($Submit -and $IosProfile -ne 'production'){throw '-Submit kræver -IosProfile production. Preview kan ikke indsendes til TestFlight.'}
+if($RegisterIosDevice -and $Target -notin @('ios','all')){throw '-RegisterIosDevice kan kun bruges med -Platform ios eller all.'}
+if($RegisterIosDevice -and $IosProfile -ne 'preview'){throw '-RegisterIosDevice bruges kun med -IosProfile preview.'}
 function Invoke-Checked([string]$Command, [string[]]$Arguments) {
   Write-Host "`n> $Command $($Arguments -join ' ')" -ForegroundColor Cyan
   & $Command @Arguments
@@ -174,12 +178,19 @@ if($Target -in @('ios','all')){
   Push-Location 'expo-ios'
   try{
     if(-not $SkipInstall -or !(Test-Path 'node_modules/expo') -or !(Test-Path 'node_modules/expo-modules-autolinking')){Invoke-Checked 'npm.cmd' @('install','--include=dev')}
+    if($RegisterIosDevice){
+      Write-Host 'Registrer iPhone paa Expo/Apple. Aab QR eller registreringslink paa telefonen og foelg trinnene.' -ForegroundColor Cyan
+      Invoke-Checked 'npx.cmd' @('eas','device:create')
+      Write-Host 'Registrering gennemfoert. Der bygges nu en NY preview IPA med enhedsprofilen.' -ForegroundColor Cyan
+    }
     $easArgs=@('eas','build','--platform','ios','--profile',$IosProfile)
     if($Submit){$easArgs+= '--auto-submit'}
     Invoke-Checked 'npx.cmd' $easArgs
     if($IosProfile -eq 'preview'){
-      Write-Host 'iOS preview bygget via Expo. Registrer din iPhone med: cd expo-ios; npx eas device:create' -ForegroundColor Green
-      Write-Host 'Åbn buildets installationslink fra Expo på din registrerede iPhone.' -ForegroundColor Green
+      Write-Host 'iOS preview bygget via Expo EAS (ikke lokalt paa Windows, og uden TestFlight).' -ForegroundColor Green
+      Write-Host 'Aab Expo build-linket paa din REGISTREREDE iPhone og vaelg Install (eller scan QR fra build-siden).' -ForegroundColor Green
+      Write-Host 'Hvis telefonen ikke er registreret: .\build-apk.ps1 -Platform ios -RegisterIosDevice -SkipPull' -ForegroundColor Yellow
+      Write-Host 'VIGTIGT: Kun iPhones inkluderet i DENNE builds signeringsprofil kan installere IPA-filen.' -ForegroundColor Yellow
     }elseif($Submit){
       Write-Host 'iOS production build og TestFlight-indsendelse startet via Expo EAS.' -ForegroundColor Green
     }else{

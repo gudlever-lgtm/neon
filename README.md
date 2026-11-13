@@ -76,7 +76,8 @@ En skrivende test mod den offentlige server kan kun startes eksplicit med `--pub
 cd E:\neon
 .\build-apk.ps1 -Platform apk
 .\build-apk.ps1 -Platform aab
-.\build-apk.ps1 -Platform ios -IosProfile preview
+.\build-apk.ps1 -Platform ios -RegisterIosDevice
+.\build-apk.ps1 -Platform ios
 .\build-apk.ps1 -Platform ios -IosProfile production -Submit
 ```
 
@@ -87,7 +88,9 @@ cd E:\neon
 - Der uploades **ikke** automatisk
 - API-basen er `https://dulmens.dk/neon` (uden `/api`); websocket-adressen er `wss://dulmens.dk/neon/ws`
 - Android bygger lokalt med JDK 21 + Android SDK (Gradle). **Kun iOS benytter Expo EAS**.
-- `-IosProfile preview` bygger til registreret iPhone. Kør `cd expo-ios; npx eas device:create` først.
+- `-Platform ios` bygger som standard en **preview-IPA via Expo EAS** til installation på registreret iPhone uden TestFlight. Windows kan ikke bygge/signere iOS lokalt; Android-builds kører stadig helt lokalt.
+- Første gang: `-Platform ios -RegisterIosDevice` registrerer iPhonen via Expo før en ny preview-build. Åbn derefter Expo-buildets Install-link eller QR-kode på iPhonen.
+- Brug `-IosProfile production -Submit` når buildet skal sendes til App Store Connect/TestFlight.
 - `-IosProfile production -Submit` bygger og uploader samme nye build til TestFlight, så et gammelt build ikke genindsendes ved en fejl.
 - Scriptet forsøger at gemme lokale ændringer i en Git-stash, hente seneste `main` og genskabe ændringerne. Hvis stash fejler uden at ændre Git-tilstanden, springer det `git pull` over og bygger med lokale filer. Ved konflikt eller delvise ændringer stopper det og bevarer stashen, så intet går tabt.
 - Brug `-SkipPull`, hvis du bevidst bygger fra lokale ændringer uden at hente GitHub. `-SkipInstall` springer installation over, når modulerne findes.
