@@ -29,4 +29,6 @@ test('iOS launcher icon is a full-size opaque PNG and configured in Expo',()=>{
   assert.equal(png[25],2,'RGB with no alpha channel');
   const eas=require('../expo-ios/eas.json');
   assert.equal(eas.build.preview.distribution,'internal');
+  assert.equal(eas.build.preview.autoIncrement,true);
+  assert.equal(eas.build.production.autoIncrement,true);
 });

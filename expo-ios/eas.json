@@ -6,11 +6,13 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "autoIncrement": true,
       "ios": {
         "resourceClass": "m-medium"
       }
     },
     "production": {
+      "autoIncrement": true,
       "ios": {
         "resourceClass": "m-medium"
       }
