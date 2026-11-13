@@ -1,4 +1,4 @@
--- Neon Rally v0.5 / MariaDB 10.6+ / utf8mb4
+-- Neon / MariaDB 10.6+ / utf8mb4. Database identifier retained for compatibility.
 CREATE DATABASE IF NOT EXISTS neon_rally CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE neon_rally;
 
