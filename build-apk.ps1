@@ -41,8 +41,34 @@ if(!(Test-Path '.git')) { throw "Ingen .git i $ProjectRoot. Kør: git clone http
 if(-not $SkipPull){
   $dirty=(& git status --porcelain)
   if($LASTEXITCODE -ne 0){throw 'git status fejlede'}
-  if($dirty){throw 'Lokale ændringer fundet. Commit/stash dem eller brug -SkipPull. Intet overskrives.'}
-  Invoke-Checked 'git' @('pull','--ff-only','origin','main')
+  $stashSha=$null
+  if($dirty){
+    $stashMessage="neon-build-autostash-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+    Write-Host 'Lokale ændringer fundet; gemmer dem midlertidigt med git stash.' -ForegroundColor Yellow
+    Invoke-Checked 'git' @('stash','push','--include-untracked','-m',$stashMessage)
+    $stashSha=(& git rev-parse 'refs/stash').Trim()
+    if($LASTEXITCODE -ne 0 -or -not $stashSha){throw 'Git stash kunne ikke bekræftes. Kontrollér git stash list.'}
+    $remaining=(& git status --porcelain)
+    if($LASTEXITCODE -ne 0 -or $remaining){throw "Arbejdsområdet er stadig ændret efter stash. Ændringerne er bevaret i $stashSha. Stopper sikkert."}
+  }
+  try {
+    Invoke-Checked 'git' @('pull','--ff-only','origin','main')
+  } finally {
+    if($stashSha){
+      Write-Host "Genskaber lokale ændringer fra stash $stashSha" -ForegroundColor Cyan
+      & git stash apply --index $stashSha
+      if($LASTEXITCODE -ne 0){
+        throw "Git kunne ikke automatisk genskabe alle ændringer. Stash $stashSha er bevaret. Undersøg git status og git stash list; kør ikke endnu et build før konflikten er løst."
+      }
+      $topStash=(& git rev-parse 'refs/stash').Trim()
+      if($LASTEXITCODE -ne 0 -or $topStash -ne $stashSha){
+        Write-Warning "Ændringer er genskabt, men stash-listen har ændret sig. Stash $stashSha er bevidst ikke slettet."
+      }else{
+        Invoke-Checked 'git' @('stash','drop','stash@{0}')
+        Write-Host 'Lokale ændringer er genskabt; midlertidig stash er fjernet.' -ForegroundColor Green
+      }
+    }
+  }
 }
 if($Target -in @('apk','aab','all')){
   # Java 21 is required by the Capacitor Android compiler.
