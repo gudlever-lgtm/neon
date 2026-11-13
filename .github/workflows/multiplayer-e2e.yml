@@ -1,0 +1,70 @@
+name: Neon multiplayer E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  two-player-match:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: ci_root_password
+          MARIADB_DATABASE: neon_rally
+          MARIADB_USER: neon_api
+          MARIADB_PASSWORD: ci_test_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: |
+          npm install --no-package-lock --no-audit --no-fund
+          npm install --no-package-lock --no-audit --no-fund --prefix server
+      - name: Load isolated database schema
+        run: docker exec -i "${{ job.services.mariadb.id }}" mariadb -uroot -pci_root_password < server/sql/schema.sql
+      - name: Existing unit tests
+        run: |
+          npm test
+          npm test --prefix server
+      - name: Start isolated Neon backend
+        env:
+          HOST: 127.0.0.1
+          PORT: '3100'
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_USER: neon_api
+          DB_PASSWORD: ci_test_password
+          DB_NAME: neon_rally
+        run: |
+          node server/src/index.js > "$RUNNER_TEMP/neon-server.log" 2>&1 &
+          echo "NEON_PID=$!" >> "$GITHUB_ENV"
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:3100/api/health > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo 'Backend did not become healthy'
+          exit 1
+      - name: Run full two-player match
+        run: npm run test:e2e --prefix server
+      - name: Stop isolated backend
+        if: always()
+        run: |
+          if [ -n "${NEON_PID:-}" ]; then kill "$NEON_PID" 2>/dev/null || true; fi
+          if [ -f "$RUNNER_TEMP/neon-server.log" ]; then tail -n 40 "$RUNNER_TEMP/neon-server.log"; fi
