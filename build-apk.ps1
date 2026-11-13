@@ -39,33 +39,48 @@ Set-Location $ProjectRoot
 foreach($cmd in @('git','node','npm')) {if(-not (Get-Command $cmd -ErrorAction SilentlyContinue)){throw "Mangler $cmd i PATH"}}
 if(!(Test-Path '.git')) { throw "Ingen .git i $ProjectRoot. Kør: git clone https://github.com/gudlever-lgtm/neon.git E:\neon (eller git init + remote)." }
 if(-not $SkipPull){
-  $dirty=(& git status --porcelain)
+  $dirty=@(& git status --porcelain)
   if($LASTEXITCODE -ne 0){throw 'git status fejlede'}
   $stashSha=$null
+  $skipPullDueToStash=$false
   if($dirty){
     $stashMessage="neon-build-autostash-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
     Write-Host 'Lokale ændringer fundet; gemmer dem midlertidigt med git stash.' -ForegroundColor Yellow
-    Invoke-Checked 'git' @('stash','push','--include-untracked','-m',$stashMessage)
-    $stashSha=(& git rev-parse 'refs/stash').Trim()
-    if($LASTEXITCODE -ne 0 -or -not $stashSha){throw 'Git stash kunne ikke bekræftes. Kontrollér git stash list.'}
-    $remaining=(& git status --porcelain)
-    if($LASTEXITCODE -ne 0 -or $remaining){throw "Arbejdsområdet er stadig ændret efter stash. Ændringerne er bevaret i $stashSha. Stopper sikkert."}
-  }
-  try {
-    Invoke-Checked 'git' @('pull','--ff-only','origin','main')
-  } finally {
-    if($stashSha){
-      Write-Host "Genskaber lokale ændringer fra stash $stashSha" -ForegroundColor Cyan
-      & git stash apply --index $stashSha
-      if($LASTEXITCODE -ne 0){
-        throw "Git kunne ikke automatisk genskabe alle ændringer. Stash $stashSha er bevaret. Undersøg git status og git stash list; kør ikke endnu et build før konflikten er løst."
+    $stashBefore=(& git stash list -1 --format='%H' | Out-String).Trim()
+    & git stash push --include-untracked -m $stashMessage
+    $stashExit=$LASTEXITCODE
+    $stashAfter=(& git stash list -1 --format='%H' | Out-String).Trim()
+    $remaining=@(& git status --porcelain)
+    if($LASTEXITCODE -ne 0){throw 'Git status fejlede efter stash-forsøget. Stopper for at beskytte lokale ændringer.'}
+    if($stashExit -ne 0){
+      if($stashBefore -ne $stashAfter -or (($dirty -join "`n") -ne ($remaining -join "`n"))){
+        throw 'Git stash fejlede og ændrede Git-tilstanden. Stopper sikkert. Undersøg git status og git stash list.'
       }
-      $topStash=(& git rev-parse 'refs/stash').Trim()
-      if($LASTEXITCODE -ne 0 -or $topStash -ne $stashSha){
-        Write-Warning "Ændringer er genskabt, men stash-listen har ændret sig. Stash $stashSha er bevidst ikke slettet."
-      }else{
-        Invoke-Checked 'git' @('stash','drop','stash@{0}')
-        Write-Host 'Lokale ændringer er genskabt; midlertidig stash er fjernet.' -ForegroundColor Green
+      Write-Warning 'Git stash kunne ikke gennemføres. Springer git pull over og bygger med uændrede lokale filer. Brug git status til at undersøge årsagen.'
+      $skipPullDueToStash=$true
+    }else{
+      $stashSha=$stashAfter
+      if(-not $stashSha -or $stashBefore -eq $stashSha){throw 'Git stash oprettede ingen ny stash. Stopper sikkert.'}
+      if($remaining){throw "Arbejdsområdet er stadig ændret efter stash. Ændringerne er bevaret i $stashSha. Stopper sikkert."}
+    }
+  }
+  if(-not $skipPullDueToStash){
+    try {
+      Invoke-Checked 'git' @('pull','--ff-only','origin','main')
+    } finally {
+      if($stashSha){
+        Write-Host "Genskaber lokale ændringer fra stash $stashSha" -ForegroundColor Cyan
+        & git stash apply --index $stashSha
+        if($LASTEXITCODE -ne 0){
+          throw "Git kunne ikke automatisk genskabe alle ændringer. Stash $stashSha er bevaret. Undersøg git status og git stash list; kør ikke endnu et build før konflikten er løst."
+        }
+        $topStash=(& git rev-parse 'refs/stash').Trim()
+        if($LASTEXITCODE -ne 0 -or $topStash -ne $stashSha){
+          Write-Warning "Ændringer er genskabt, men stash-listen har ændret sig. Stash $stashSha er bevidst ikke slettet."
+        }else{
+          Invoke-Checked 'git' @('stash','drop','stash@{0}')
+          Write-Host 'Lokale ændringer er genskabt; midlertidig stash er fjernet.' -ForegroundColor Green
+        }
       }
     }
   }

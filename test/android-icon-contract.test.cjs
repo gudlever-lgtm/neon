@@ -31,10 +31,14 @@ test('Android builds stay local while only iOS uses Expo EAS',()=>{
   assert.match(build,/Copy-Item \$aab \(Join-Path \$OutputDirectory 'neon-release-unsigned\.aab'\)/);
 });
 test('Git sync stashes local changes and restores them without discarding conflicts',()=>{
-  assert.match(build,/git' @\('stash','push','--include-untracked'/);
+  assert.match(build,/git stash push --include-untracked -m \$stashMessage/);
   assert.match(build,/git stash apply --index \$stashSha/);
   assert.match(build,/\$topStash -ne \$stashSha/);
   assert.match(build,/git' @\('stash','drop','stash@\{0\}'\)/);
   assert.match(build,/Stash \$stashSha er bevaret/);
   assert.match(build,/pull','--ff-only','origin','main'/);
+  assert.match(build,/\$stashExit -ne 0/);
+  assert.match(build,/\$stashBefore -ne \$stashAfter/);
+  assert.match(build,/\$skipPullDueToStash=\$true/);
+  assert.match(build,/if\(-not \$skipPullDueToStash\)/);
 });

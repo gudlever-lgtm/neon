@@ -89,7 +89,7 @@ cd E:\neon
 - Android bygger lokalt med JDK 21 + Android SDK (Gradle). **Kun iOS benytter Expo EAS**.
 - `-IosProfile preview` bygger til registreret iPhone. Kør `cd expo-ios; npx eas device:create` først.
 - `-IosProfile production -Submit` bygger og uploader samme nye build til TestFlight, så et gammelt build ikke genindsendes ved en fejl.
-- Scriptet gemmer automatisk lokale ændringer (og untracked filer) i en midlertidig Git-stash, henter seneste `main` og genskaber ændringerne. Ved konflikt stopper det og bevarer stashen, så intet går tabt.
+- Scriptet forsøger at gemme lokale ændringer i en Git-stash, hente seneste `main` og genskabe ændringerne. Hvis stash fejler uden at ændre Git-tilstanden, springer det `git pull` over og bygger med lokale filer. Ved konflikt eller delvise ændringer stopper det og bevarer stashen, så intet går tabt.
 - Brug `-SkipPull`, hvis du bevidst bygger fra lokale ændringer uden at hente GitHub. `-SkipInstall` springer installation over, når modulerne findes.
 
 ## iOS via Expo.dev (offline-spil)
