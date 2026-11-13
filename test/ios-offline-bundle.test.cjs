@@ -18,3 +18,15 @@ test('Expo iOS embeds Neon and needs no internet for Classic and Arcade',()=>{
   const app=fs.readFileSync(path.join(root,'expo-ios/App.js'),'utf8');
   assert.match(app,/source=\{\{html:bundle\.html/);
 });
+test('iOS launcher icon is a full-size opaque PNG and configured in Expo',()=>{
+  const expo=require('../expo-ios/app.json').expo;
+  assert.equal(expo.icon,'./assets/neon-icon.png');
+  assert.equal(expo.ios.icon,expo.icon);
+  const png=fs.readFileSync(path.join(root,'expo-ios/assets/neon-icon.png'));
+  assert.equal(png.subarray(1,4).toString('ascii'),'PNG');
+  assert.equal(png.readUInt32BE(16),1024);
+  assert.equal(png.readUInt32BE(20),1024);
+  assert.equal(png[25],2,'RGB with no alpha channel');
+  const eas=require('../expo-ios/eas.json');
+  assert.equal(eas.build.preview.distribution,'internal');
+});

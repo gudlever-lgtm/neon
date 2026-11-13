@@ -4,6 +4,12 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    },
     "production": {
       "ios": {
         "resourceClass": "m-medium"

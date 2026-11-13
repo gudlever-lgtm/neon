@@ -29,7 +29,7 @@ function scenario(){
  vm.runInNewContext(fs.readFileSync(path.join(web,'arcade-rules.js'),'utf8'),sandbox);
  vm.runInNewContext(fs.readFileSync(path.join(web,'mobile-utils.js'),'utf8'),sandbox);
  const gameSource=fs.readFileSync(path.join(web,'game.js'),'utf8');
- const testHook="window.__neonSmoke={point,playerX:()=>game.playerX};";
+ const testHook="window.__neonSmoke={point,playerX:()=>game.playerX,state:()=>game.state,boostReady:()=>game.boostReady,shieldReady:()=>game.shieldReady};";
  assert.ok(gameSource.includes("game.state='menu';chooseMode('classic');updateUI();"),'smoke-test hook insertion point missing');
  vm.runInNewContext(gameSource.replace("game.state='menu';chooseMode('classic');updateUI();",testHook+"game.state='menu';chooseMode('classic');updateUI();"),sandbox);
  return {node,window,challenge:id=>node(id).handlers.click(),mode:id=>node(id+'-mode').onclick(),start:()=>node('main-action').onclick(),tick:n=>{for(let i=0;i<n;i++){clock+=32;frame(clock)}}};
@@ -73,4 +73,27 @@ test('touch paddle keeps moving while finger stays down across a scored point',(
  canvas.handlers.pointerup({pointerId:11,pointerType:'touch'});
  canvas.handlers.pointermove({pointerId:11,pointerType:'touch',clientX:90,clientY:540});
  assert.equal(s.window.__neonSmoke.playerX(),300);
+});
+test('Arcade Turbo and Shield remain usable after releasing touch on mobile',()=>{
+ const s=scenario();s.mode('arcade');s.start();
+ const canvas=s.node('game');
+ canvas.handlers.pointerdown({pointerId:18,pointerType:'touch',clientX:195,clientY:540});
+ canvas.handlers.pointerup({pointerId:18,pointerType:'touch'});
+ assert.equal(s.window.__neonSmoke.state(),'playing');
+ assert.equal(s.node('boost').disabled,false);
+ s.node('boost').onclick();
+ assert.equal(s.window.__neonSmoke.boostReady(),true);
+ assert.equal(s.node('boost-count').textContent,1);
+ assert.equal(s.node('shield').disabled,false);
+ s.node('shield').onclick();
+ assert.equal(s.window.__neonSmoke.shieldReady(),true);
+ assert.equal(s.node('shield-count').textContent,0);
+});
+test('Power-ups stay unavailable in Classic, and deliberate Pause works',()=>{
+ const s=scenario();s.start();
+ assert.equal(s.node('powerups').hidden,true);
+ s.node('pause').onclick();
+ assert.equal(s.window.__neonSmoke.state(),'paused');
+ s.node('pause').onclick();
+ assert.equal(s.window.__neonSmoke.state(),'playing');
 });
