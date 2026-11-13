@@ -29,6 +29,14 @@
 - Installationssiden `/neon/` er separat fra spilfrontend; **kopiér ikke** web-spillet ind over landingssiden.
 - Online-API-funktionerne aktiveres først efter deployment og servicegenstart.
 
+## V0.11 – Multiplayer reliability / automatiseret E2E
+
+**Implementeret i kode:** Et script med to autentificerede spillere, invitation, fælles kamp, serverautoritativ scoreafslutning, resultat, historik, profiler, rangliste og logout. GitHub Actions starter en isoleret MariaDB-service og backend, kører de eksisterende tests og derefter E2E. Ingen produktionstest køres automatisk.
+
+**Verifikation:** Testen skal bestå i GitHub Actions med rigtig MariaDB. En efterfølgende offentlig skrivende E2E-test kræver særskilt godkendelse og efterlader testkonti/-kampe til kontrolleret oprydning. Fysisk test på to telefoner er fortsat udestående.
+
+**Produktnavn:** Kun **Neon** i produkttekster. Teknisk legacy som `neon-rally.service`, `neon_rally` og browserlagringsnøgler bevares indtil planlagt migration.
+
 ## Kommandoer til verificering
 
 ```powershell
