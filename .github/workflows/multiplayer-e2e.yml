@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: neon-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   two-player-match:
     runs-on: ubuntu-latest
