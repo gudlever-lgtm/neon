@@ -109,6 +109,6 @@ Kræver autentifikation. `limit` er heltal fra 1 til 30. Returnerer **kun den lo
 ### Drift
 
 - Ingen SQL-migrering er nødvendig, da ruterne læser fra eksisterende `matches`, `users` og `leaderboard`.
-- Udrul opdateret `server/src/index.js` til den **eksisterende** `/var/www/dulmens.dk/neon/server/` og genstart først derefter `neon-rally.service`.
+- Udrul opdateret `server/src/index.js` til den **eksisterende** `/var/www/dulmens.dk/neon-backend/server/` og genstart først derefter `neon-rally.service`.
 - Den eksisterende base-URL i APK-buildscriptet er `-ApiUrl https://dulmens.dk/neon` – frontend tilføjer `/api` og `/ws`.
 - Gennemfør manuel integrationstest med to konti og MariaDB inden produktion. Rute- og frontend-syntaks er kontrolleret, men der er ikke udført en faktisk database-/WebSocket-integrationstest fra dette miljø.
