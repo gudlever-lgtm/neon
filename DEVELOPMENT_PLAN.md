@@ -37,6 +37,14 @@
 
 **Produktnavn:** Kun **Neon** i produkttekster. Teknisk legacy som `neon-rally.service`, `neon_rally` og browserlagringsnøgler bevares indtil planlagt migration.
 
+### Stabilitetssuite (kun isoleret testdatabase)
+
+`npm run test:reliability --prefix server` opretter to nye testspillere og verificerer genopkobling inden for 20-sekunders fristen, at gentagen opgivelse ikke gemmer resultatet to gange, og at en tabt WebSocket-forbindelse giver modstanderen en sejr efter fristen. GitHub-workflowet kører den efter den ordinære scorebaserede E2E-kamp. Ingen af stabilitetsscenarierne kører mod produktionsserveren.
+
+### Kontrolleret oprydning efter offentlig test
+
+Den offentlige E2E-test den 13. november efterlod spiller-id 1 og 2 samt kamp-id 1. Inden sletning: læs `users`, `invitations`, `matches` og `sessions` for de præcise id'er; kontrollér at brugernavnene begynder med `neon_e2e_`, at kampens deltagere er 1 og 2, og at ingen andre relationer findes. **Kør ikke automatisk DELETE mod produktionsdatabasen.** Oprydning kræver særskilt kontrol og godkendelse.
+
 ## Kommandoer til verificering
 
 ```powershell
