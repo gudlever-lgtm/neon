@@ -50,6 +50,8 @@ Tester regler, grafisk spilinitialisering (mocked Canvas) og eksisterende server
 
 GitHub Actions kører `.github/workflows/multiplayer-e2e.yml` ved push og pull request. Workflowet starter en **midlertidig MariaDB**, indlæser `server/sql/schema.sql`, starter Neon-serveren og gennemfører en rigtig kamp med to oprettede testkonti og to WebSockets. Det kontrollerer kampresultat, historik, profiler og rangliste. Testdata forsvinder med den midlertidige database; produktionsdatabasen berøres ikke.
 
+Workflowet kører også `test:reliability`: genopkobling under aktiv kamp, dobbelt-opgivelse og afbrudt WebSocket med serverafgjort sejr. Disse tests køres **kun** mod en isoleret testdatabase.
+
 Lokalt, **kun med en separat testdatabase** og en Neon-server på `127.0.0.1:3100`:
 
 ```bash
